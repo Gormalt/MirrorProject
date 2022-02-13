@@ -1,8 +1,10 @@
 
 <p> Test HTML to send to clients</p>
 
-
-
+<button id = "pressLeft">Left</button>
+<button id = "pressRight">Right</button>
+<br>
+<button id = "pressDown">Down</button>
 
 
 <script src="/socket.io/socket.io.js"></script>
@@ -14,5 +16,22 @@
     socket.on('update', function(data){
         console.log(data)
     });
+    
+    
+    var leftButton = document.getElementById('pressLeft');
+    var rightButton = document.getElementById('pressRight');
+    var downButton = document.getElementById('pressDown');
+    
+    var inputButton 
+    
+    leftButton.onclick = function(){
+        socket.emit('inputPack', {target:"left"});
+    }
+    rightButton.onclick = function(){
+        socket.emit('inputPack', {target:"right"});
+    }  
+    downButton.onclick = function(){
+        socket.emit('inputPack', {target:"down"});
+    }
 
 </script>
