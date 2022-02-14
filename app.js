@@ -41,6 +41,24 @@ io.sockets.on('connection', function(socket){
 
 
 
+
+var Piece = function(param){
+    self.blocks = param.blocks
+    self.position = param.position
+    self.rotation = param.rotation
+    
+    
+}
+
+var Board = function(){
+    self.pieces = [];
+    self.activePiece = 'null';
+    
+    
+    
+}
+
+
 //Every so often, send data back to the players
 setInterval(function(){
     
