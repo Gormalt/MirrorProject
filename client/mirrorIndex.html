@@ -1,0 +1,71 @@
+
+<p> Display Stuff </p>
+<canvas id="ctx" width = "600" height = "1200" style = "border:1px solid #000000;"></canvas>
+
+<script src="/socket.io/socket.io.js"></script>
+
+<script>
+	//Getting the socket and the document variables
+    var socket = io();
+    var ctx = document.getElementById("ctx").getContext("2d");
+	
+	//creating objects
+	var Block = function(NColor, position){
+		var self = {
+			color:Ncolor,
+			x: position.x,
+			y: position.y,
+		}
+		self.draw = function(){
+			//draw the block here
+		
+		}
+	
+	}
+	
+	Blocks.list = {}
+	var Peice = function(blockList){
+		var self = {
+			blocks:blockList,
+		
+		}
+		
+		self.move = function(dir){
+			foreach(var block in self.blocks){
+				
+				switch(dir){
+					case 'left':
+						block.x--;
+					case 'right':
+						block.x++;
+					case 'up':
+						block.y--;
+					case 'down':
+						block.y++;
+				}
+				
+			}
+
+		}
+	
+	}
+	
+	//Socket Functions
+
+	//Updates the active peices position`
+    socket.on('activeUpdate', function(data){
+        console.log(data)
+    });
+    
+	//deletes a saved row of blocks
+	socket.on('deleteRow', function(data){
+		console.log(data)
+	});
+	
+	socket.on('setActive', function(data){
+		console.log(data)
+	});
+	
+	
+	
+</script>
