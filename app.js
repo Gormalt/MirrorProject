@@ -47,14 +47,43 @@ var Piece = function(param){
     self.position = param.position
     self.rotation = param.rotation
     
+
+}
+
+Peice.spawnNew(){
     
+var blocks = [{x:0,y:0}, {x:1,y:0}, {x:0,y:1}, {x:1,y:1} ]
+    
+    return Peice({[],{x:0,y:0}, 0))
 }
 
 var Board = function(){
-    self.pieces = [];
-    self.activePiece = 'null';
+    self.blocks = [];
+    self.activePiece = [];
     
+    self.updatePiece = function(){
+        
+        testPeice = []
+        
+        if(activePiece[0] > 0){
+            //setpeice and return
+        }            
+                
+        for(let x  = 1; x < 11; x++){
+                
+            if(activePiece[x] & blocks[x-1] > 0){
+                //setPeice and return
+            }
+            testPeice[x-1] = activePeice[x]
+        }
+        activePeice = testPeice;
+        
+    }
     
+    self.spawnNextPeice() = function(){
+        
+        
+    }
     
 }
 
