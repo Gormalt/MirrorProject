@@ -1,6 +1,6 @@
 
 <p> Display Stuff </p>
-<canvas id="ctx" width = "600" height = "1200" style = "border:1px solid #000000;"></canvas>
+<canvas id="ctx" width = "600" height = "1000" style = "border:1px solid #000000;"></canvas>
 
 <script src="/socket.io/socket.io.js"></script>
 
@@ -9,30 +9,48 @@
     var socket = io();
     var ctx = document.getElementById("ctx").getContext("2d");
 	
-	//creating objects
-	var Block = function(NColor, position){
+    //Preparing all of the images and saving them in a list
+    var Img = {};
+    Img.block = new Image()
+    Img.block.src = '/client/img/Greyblock.png';
+    
+	//The Block class, remembers position and color
+	var Block = function(NColor, position){ 
 		var self = {
 			color:Ncolor,
 			x: position.x,
 			y: position.y,
+            id: Math.random(),
 		}
 		self.draw = function(){
 			//draw the block here
-		
+		    ctx.drawImage(Img.block, x, y, 50, 50);
 		}
+        return self;
 	
 	}
-	
-	Blocks.list = {}
-	var Peice = function(blockList){
+    
+    //Preparing a list of all blocks to keep track of.
+	Block.list = {}
+    
+    
+    //The Peice class, holds a list of all blocks.
+	var Peice = function(data){
 		var self = {
-			blocks:blockList,
+			blocks:data.blockList,
 		
 		}
 		
+        self.draw = function(dir){
+            for(var i in self.blocks){
+                self.blocks[i].draw();
+            }
+        }
+        
 		self.move = function(dir){
-			foreach(var block in self.blocks){
-				
+			for(var i in self.blocks){
+                block = self.blocks[i]
+                
 				switch(dir){
 					case 'left':
 						block.x--;
@@ -50,20 +68,72 @@
 	
 	}
 	
+    //Preparing a 'peice' object to hold all the peice data.
+    Peice.active = Peice({blockList:{}})
+    
+    //Creating an Update function that redraws everything with new data
+    var Update = function(){
+    
+        for(var i in Blocks.list){
+            Blocks.list[i].draw();
+        }
+        
+        Peice.active.draw();
+    
+    }
+    
+    
 	//Socket Functions
 
 	//Updates the active peices position`
     socket.on('activeUpdate', function(data){
-        console.log(data)
+        self.move(data.dir);
+        Update();
     });
     
 	//deletes a saved row of blocks
 	socket.on('deleteRow', function(data){
-		console.log(data)
+		for(var i in Blocks.list){
+            var block = Blocks.list[i];
+            
+            if(block.y = data.row){
+                delete Blocks.list[i];
+            }
+            else if(block.y > data.row){
+                block.y--;
+            }
+        }
+        Update();
+        
 	});
-	
+	//Take the active block and makes it a normal one.
 	socket.on('setActive', function(data){
-		console.log(data)
+		for(var i in Peice.active.blocks){
+            var block = Peice.active.blocks[i];
+            
+            Blocks.list[block.id] = block;
+        }
+        
+        newBlockList = {}
+        var val;
+        var count = 0;
+        for(var i = 0; i < data.active.length; i++){
+            
+            val = data.active[i];
+                
+            while(val > 0){
+            
+                if(val & 1 > 0){
+                   var newBlock = Block(data.color,{x:10-count, y:i});
+                   newBlockList[newBlock.id] = newBlock;
+                }
+                val = val >> 1;
+                count++;
+            }
+        }
+        
+        Peice.active = Peice({blockList:newBlockList});
+        
 	});
 	
 	
