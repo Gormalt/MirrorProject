@@ -17,12 +17,12 @@
         console.log(data)
     });
     
-    
+    //Get the buttons by their id's
     var leftButton = document.getElementById('pressLeft');
     var rightButton = document.getElementById('pressRight');
     var downButton = document.getElementById('pressDown');
     var rotateButton = document.getElementById('rotate');
-        
+    //sets the function when the button is clicked
     leftButton.onclick = function(){
         socket.emit('inputPack', {target:"left"});
     }

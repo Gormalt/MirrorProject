@@ -49,7 +49,7 @@ var Board = function(){
         blocks: new Array(15),
         activePiece: new Array(15),
     }
-    
+    //Resets the board
     self.reset = function(){
         self.blocks.fill(0);
         self.activePiece.fill(0);
@@ -178,9 +178,6 @@ var Board = function(){
         frstPcY = center.y;
         for(let i = 0; i < self.activePiece.length; i++){
             val = self.activePiece[i];
-
-                
-
             count = 0;
             
             while(val > 0){
@@ -260,7 +257,8 @@ var Board = function(){
         
         if(self.checkOverlap(self.activePiece, self.blocks)){
         
-            //@TODO: XXXX note that here, we can determine if the game is over (ie, can't spawn a new peice because of overlap.
+            //@TODO: Ben & Jules 
+            //note that here, we can determine if the game is over (ie, can't spawn a new peice because of overlap.
             //We will need to add something so that the game stops when this happens.
             //Will also need to add a way to reset the game (may need another socket.on)
             //Focus on having everything reset from the server for now.
