@@ -5,7 +5,7 @@
 <button id = "pressRight">Right</button>
 <br>
 <button id = "pressDown">Down</button>
-
+<button id = "rotate">Rotate</button>
 
 <script src="/socket.io/socket.io.js"></script>
 
@@ -21,9 +21,8 @@
     var leftButton = document.getElementById('pressLeft');
     var rightButton = document.getElementById('pressRight');
     var downButton = document.getElementById('pressDown');
-    
-    var inputButton 
-    
+    var rotateButton = document.getElementById('rotate');
+        
     leftButton.onclick = function(){
         socket.emit('inputPack', {target:"left"});
     }
@@ -32,6 +31,9 @@
     }  
     downButton.onclick = function(){
         socket.emit('inputPack', {target:"down"});
+    }
+    rotateButton.onclick = function(){
+        socket.emit('inputPack', {target:"rotate"});
     }
 
 </script>

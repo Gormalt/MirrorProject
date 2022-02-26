@@ -1,6 +1,8 @@
 
 <p> Display Stuff </p>
-<canvas id="ctx" width = "600" height = "1000" style = "border:1px solid #000000;"></canvas>
+<button id = "start">Start</button>
+
+<canvas id="ctx" width = "600" height = "800" style = "border:1px solid #000000;"></canvas>
 
 <script src="/socket.io/socket.io.js"></script>
 
@@ -8,23 +10,28 @@
 	//Getting the socket and the document variables
     var socket = io();
     var ctx = document.getElementById("ctx").getContext("2d");
-	
+	var WIDTH = 600;
+    var HEIGHT = 1000;
     //Preparing all of the images and saving them in a list
     var Img = {};
     Img.block = new Image()
     Img.block.src = '/client/img/Greyblock.png';
-    
+    Img.block.onload = function() {
+    console.log("LOADED");
+    }
+
 	//The Block class, remembers position and color
 	var Block = function(NColor, position){ 
 		var self = {
-			color:Ncolor,
+			color:NColor,
 			x: position.x,
 			y: position.y,
             id: Math.random(),
 		}
 		self.draw = function(){
 			//draw the block here
-		    ctx.drawImage(Img.block, x, y, 50, 50);
+
+		    ctx.drawImage(Img.block, (self.x)*50, self.y*50, 50, 50);
 		}
         return self;
 	
@@ -50,21 +57,21 @@
 		self.move = function(dir){
 			for(var i in self.blocks){
                 block = self.blocks[i]
-                
-				switch(dir){
-					case 'left':
-						block.x--;
-					case 'right':
-						block.x++;
-					case 'up':
-						block.y--;
-					case 'down':
-						block.y++;
-				}
+               
+				if(dir == 'left'){
+                    block.x--;
+                }
+                else if(dir == 'right'){
+                    block.x++;
+                }
+                else if(dir == 'down'){
+                    block.y++;
+                }
 				
 			}
 
 		}
+        return self;
 	
 	}
 	
@@ -73,13 +80,15 @@
     
     //Creating an Update function that redraws everything with new data
     var Update = function(){
-    
-        for(var i in Blocks.list){
-            Blocks.list[i].draw();
+        ctx.fillStyle = 'black';
+        ctx.clearRect(0,0,WIDTH,HEIGHT);
+        for(var i in Block.list){
+            Block.list[i].draw();
         }
         
+        
         Peice.active.draw();
-    
+
     }
     
     
@@ -87,55 +96,99 @@
 
 	//Updates the active peices position`
     socket.on('activeUpdate', function(data){
-        self.move(data.dir);
+        if(data.dir == 'rotate'){
+            newBlockList = {}
+            var val;
+            var count;
+            for(var i = 0; i < data.active.length; i++){
+                count = 0;
+                val = data.active[i];
+                
+                while(val > 0){
+                    console.log(count);
+                    if((val & 1) != 0){
+                        var newBlock = Block(data.color,{x:count, y:15-i});
+                        newBlockList[newBlock.id] = newBlock;
+                    }
+                    val = val >> 1;
+                    count++;
+                }
+            }
+            Peice.active = Peice({blockList:newBlockList});
+        
+        }
+        else{
+            Peice.active.move(data.dir);
+        }
         Update();
+        
     });
     
 	//deletes a saved row of blocks
 	socket.on('deleteRow', function(data){
-		for(var i in Blocks.list){
-            var block = Blocks.list[i];
-            
-            if(block.y = data.row){
-                delete Blocks.list[i];
+        
+        for(var i in Block.list){
+            var block = Block.list[i];
+            if(block.y == 16-data.row){
+                delete Block.list[i];
             }
-            else if(block.y > data.row){
-                block.y--;
+            else if(block.y < 16-data.row){
+                block.y++;
             }
         }
+        
+        for(var i in Peice.active.blocks){
+            var block = Peice.active.blocks[i];
+            
+            if(block.y == 16-data.row){
+                delete Peice.active.blocks[i];
+            }
+            else if(block.y < 16-data.row){
+                block.y++;
+            }
+            
+        }
+        
         Update();
         
 	});
+    
 	//Take the active block and makes it a normal one.
 	socket.on('setActive', function(data){
-		for(var i in Peice.active.blocks){
-            var block = Peice.active.blocks[i];
-            
-            Blocks.list[block.id] = block;
+        if(Peice.active){
+            for(var i in Peice.active.blocks){
+                var block = Peice.active.blocks[i];
+                
+                Block.list[block.id] = block;
+            }
         }
         
         newBlockList = {}
         var val;
-        var count = 0;
+        var count;
         for(var i = 0; i < data.active.length; i++){
-            
+            count = 0;
             val = data.active[i];
                 
             while(val > 0){
             
                 if(val & 1 > 0){
-                   var newBlock = Block(data.color,{x:10-count, y:i});
+                   var newBlock = Block(data.color,{x:count, y:15-i});
                    newBlockList[newBlock.id] = newBlock;
                 }
                 val = val >> 1;
                 count++;
             }
         }
-        
         Peice.active = Peice({blockList:newBlockList});
-        
+        Update()
 	});
 	
+    //Start Button (will remove in the future
+    var startButton = document.getElementById('start');
 	
+    startButton.onclick = function(){
+        socket.emit('start', {time:"Now"});
+    }
 	
 </script>
