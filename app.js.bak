@@ -259,6 +259,9 @@ var Board = function(){
 			
 			Board.gb.gameStarted = false;
 			
+			var socket = io();
+			socket.emit('clearBoard');
+			
             //@TODO: Ben & Jules 
             //note that here, we can determine if the game is over (ie, can't spawn a new peice because of overlap.
             //We will need to add something so that the game stops when this happens.
