@@ -1,52 +1,25 @@
-<!DOCTYPE html>
-<html>
-<head>
-<style>
 
-body {
-    background-color:black;
-}
-
-#ctx{
-    border:4px solid #FFFFFF;
-    border-radius:2px;
-    display:block;
-    margin-left:auto;
-    margin-right:auto;
-}
-
-</style>
-</head>
-
+<p> Display Stuff </p>
 <button id = "start">Start</button>
-<div style = "width:100%;height:100%">
-<canvas id="ctx" width = "1080" height = "1920"></canvas>
-</div>
+
+<canvas id="ctx" width = "600" height = "800" style = "border:1px solid #000000;"></canvas>
+
 <script src="/socket.io/socket.io.js"></script>
+
 <script>
 	//Getting the socket and the document variables
     var socket = io();
     var ctx = document.getElementById("ctx").getContext("2d");
-	var WIDTH = 1080;
-    var HEIGHT = 1920;
-
+	var WIDTH = 600;
+    var HEIGHT = 1000;
     //Preparing all of the images and saving them in a list
     var Img = {};
-    Img[0] = new Image()
-    Img[0].src = '/client/img/Pinkblock.png';
-    Img[1] = new Image()
-    Img[1].src = '/client/img/Cyanblock.png';
-    Img[2] = new Image()
-    Img[2].src = '/client/img/Orangeblock.png';
-    Img[3] = new Image()
-    Img[3].src = '/client/img/Redblock.png';
-    Img[4] = new Image()
-    Img[4].src = '/client/img/Greenblock.png';
-    Img[5] = new Image()
-    Img[5].src = '/client/img/Blueblock.png';
-    Img[6] = new Image()
-    Img[6].src = '/client/img/Purpleblock.png';    
-    
+    Img.block = new Image()
+    Img.block.src = '/client/img/Greyblock.png';
+    Img.block.onload = function() {
+    console.log("LOADED");
+    }
+
 	//The Block class, remembers position and color
 	var Block = function(NColor, position){ 
 		var self = {
@@ -57,7 +30,8 @@ body {
 		}
 		self.draw = function(){
 			//draw the block here
-		    ctx.drawImage(Img[NColor], (self.x)*(WIDTH/12), HEIGHT - (self.y+1)*(WIDTH/12), (WIDTH/12), (WIDTH/12));
+
+		    ctx.drawImage(Img.block, (self.x)*50, self.y*50, 50, 50);
 		}
         return self;
 	
@@ -91,9 +65,6 @@ body {
                     block.x++;
                 }
                 else if(dir == 'down'){
-                    block.y--;
-                }
-                else if(dir == 'up'){
                     block.y++;
                 }
 				
@@ -110,11 +81,11 @@ body {
     //Creating an Update function that redraws everything with new data
     var Update = function(){
         ctx.fillStyle = 'black';
-        ctx.fillRect(0,0,WIDTH,HEIGHT);
+        ctx.clearRect(0,0,WIDTH,HEIGHT);
         for(var i in Block.list){
             Block.list[i].draw();
         }
-
+        
         
         Peice.active.draw();
 
@@ -136,7 +107,7 @@ body {
                 while(val > 0){
                     console.log(count);
                     if((val & 1) != 0){
-                        var newBlock = Block(data.color,{x:count, y:i});
+                        var newBlock = Block(data.color,{x:count, y:15-i});
                         newBlockList[newBlock.id] = newBlock;
                     }
                     val = val >> 1;
@@ -158,22 +129,22 @@ body {
         
         for(var i in Block.list){
             var block = Block.list[i];
-            if(block.y == data.row){
+            if(block.y == 16-data.row){
                 delete Block.list[i];
             }
-            else if(block.y > data.row){
-                block.y--;
+            else if(block.y < 16-data.row){
+                block.y++;
             }
         }
         
         for(var i in Peice.active.blocks){
             var block = Peice.active.blocks[i];
             
-            if(block.y == data.row){
+            if(block.y == 16-data.row){
                 delete Peice.active.blocks[i];
             }
-            else if(block.y > data.row){
-                block.y--;
+            else if(block.y < 16-data.row){
+                block.y++;
             }
             
         }
@@ -202,7 +173,7 @@ body {
             while(val > 0){
             
                 if(val & 1 > 0){
-                   var newBlock = Block(data.color,{x:count, y:i});
+                   var newBlock = Block(data.color,{x:count, y:15-i});
                    newBlockList[newBlock.id] = newBlock;
                 }
                 val = val >> 1;
@@ -224,4 +195,3 @@ body {
 
 	
 </script>
-</html>

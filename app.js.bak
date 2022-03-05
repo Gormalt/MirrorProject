@@ -49,14 +49,12 @@ var Board = function(){
         blocks: new Array(15),
         activePiece: new Array(15),
     }
-    
     //Resets the board
     self.reset = function(){
         self.blocks.fill(0);
         self.activePiece.fill(0);
         
     }
-    
     //Moves the peice one block down, sets it if it will be set.
     self.updatePiece = function(){
         
@@ -82,7 +80,6 @@ var Board = function(){
         
         
     }
-    
     //Moves the piece in the given direction (or rotates it)
     self.movePiece = function(dir){
         testPiece = new Array(15);
@@ -92,29 +89,33 @@ var Board = function(){
             while(!self.updatePiece()){
             }
         }
-        else if(dir == 'rotateR' || dir == 'rotateL'){
-            self.rotatePiece(dir)
+        else if(dir == 'rotate'){
+            self.rotatePiece(dir);
         }
         else{
             if(dir == 'left'){
-                
-                if(!self.checkBounds(self.activePiece, -1)){
-                    return;
-                }
-                
                 for(let x = 0; x < self.activePiece.length; x++){
-                    testPiece[x] = ((self.activePiece[x]) >> 1);
+                    res = ((self.activePiece[x]) >> 1);
 
+                    testPiece[x] = res;
+                    
+                    if(res == 0 && self.activePiece[x] != 0){
+                        return;
+                    }
+                    
+                   
                 }
             }    
             else if(dir == 'right'){
-                
-                if(!self.checkBounds(self.activePiece, 1)){
-                    return;
-                }
-                
                 for(let x = 0; x < self.activePiece.length; x++){
-                    testPiece[x] = ((self.activePiece[x]) << 1);
+                    res = ((self.activePiece[x]) << 1);
+                    
+                    if(res > 4094){
+                        return;
+                    }
+                    
+                    testPiece[x] = res;
+                    
                     
                 }
             }
@@ -127,7 +128,6 @@ var Board = function(){
 
 
     }
-    
     //See if there is overlap between the two arrays (if any bits are the same)
     self.checkOverlap = function(test, blocks){
         
@@ -141,28 +141,6 @@ var Board = function(){
         return false;
         
     }
-    
-    //See if a peice would be out of bounds when moved(L/R)
-    //int array, block: The peice to check
-    //int, Shift: The amount of spaces to the RIGHT to check (make negative for left)
-    self.checkBounds = function(block, shift){
-        
-        for(let i = 0; i < block.length; i++){
-            
-            if(shift > 0){
-                if((block[i] << shift ) >= 4096){
-                    return false;
-                }
-            }
-            else{
-                if((block[i] % (1 << (-shift))) > 0){
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-    
     //Sets THE active peice onto the board (by adding its values to the array)
     //@Todo Make it so you can place a give peice, not just the active one.
     self.setPiece = function(){
@@ -187,7 +165,7 @@ var Board = function(){
         
     }
     //Rotates the peice (only in one direction now, must add other direction).
-    self.rotatePiece = function(dir, up=0, bound=0){
+    self.rotatePiece = function(dir){
         var frstPcX = 0;
         var frstPcY = 0;
         
@@ -198,8 +176,6 @@ var Board = function(){
                     
         frstPcX = center.x;
         frstPcY = center.y;
-        amount = 0;
-        index = 0;
         for(let i = 0; i < self.activePiece.length; i++){
             val = self.activePiece[i];
             count = 0;
@@ -208,31 +184,14 @@ var Board = function(){
 
                 if(val & 1 > 0){
 
-                    if(dir == 'rotateR'){
-                        amount = (1 << frstPcX - i + frstPcY + bound);
-                        index = (frstPcY + count - frstPcX + up);
+                    if(frstPcX + i - frstPcY > 0){
+                        amount = (1 << frstPcX - i + frstPcY);
                     }
                     else{
-                        amount = (1 << frstPcX + i - frstPcY + bound);
-                        index = (frstPcY - count + frstPcX + up);
-                        
-                    }
-                    if(index < 0){
-                        self.rotatePiece(dir, up + 1, bound);
-                        return;
+                        amount = (1 >> -(frstPcX + i - frstPcY));
                     }
                     
-                    if(amount < 0){
-                        self.rotatePiece(dir, up, bound + 1);
-                        return;
-                    }
-                    else if(amount >= 4096){
-                        self.rotatePiece(dir, up, bound - 1);
-                        return;
-                    }
-                    
-                    newActive[index] += amount;
-
+                    newActive[frstPcY+count-frstPcX] += amount;
                 }
                 val = val >> 1;
                 count++;
@@ -244,12 +203,7 @@ var Board = function(){
             Board.sendToAll('activeUpdate', {dir:'rotate', color:'black', active:newActive});
             self.activePiece = newActive;
         }
-        else{
-            //TODO rotate it otherwise.
-        }
     }
-    
-   
     //Finds the center of the active peice (useful for rotation, also is kinda broken)
     self.findActiveCenter = function(){
         max = 0;
@@ -305,13 +259,16 @@ var Board = function(){
 			
 			Board.gb.gameStarted = false;
 			
+			var socket = io();
+			socket.emit('clearBoard');
+			
             //@TODO: Ben & Jules 
             //note that here, we can determine if the game is over (ie, can't spawn a new peice because of overlap.
             //We will need to add something so that the game stops when this happens.
             //Will also need to add a way to reset the game (may need another socket.on)
             //Focus on having everything reset from the server for now.
         }
-        Board.sendToAll('setActive', {color:rand, active:self.activePiece});
+        Board.sendToAll('setActive', {color:'white', active:self.activePiece});
     }
 
     return self;
@@ -363,6 +320,7 @@ setInterval(function(){
 		
         
         var socket = SOCKET_LIST[i];
+        socket.emit('update', pack);
 	}
 }, 1000/1);    
     
