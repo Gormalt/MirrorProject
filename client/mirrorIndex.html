@@ -18,7 +18,6 @@ body {
 </style>
 </head>
 
-<button id = "start">Start</button>
 <div style = "width:100%;height:100%">
 <canvas id="ctx" width = "1080" height = "1920"></canvas>
 </div>
@@ -33,15 +32,15 @@ body {
     //Preparing all of the images and saving them in a list
     var Img = {};
     Img[0] = new Image()
-    Img[0].src = '/client/img/Pinkblock.png';
+    Img[0].src = '/client/img/Redblock.png';
     Img[1] = new Image()
-    Img[1].src = '/client/img/Cyanblock.png';
+    Img[1].src = '/client/img/Orangeblock.png';
     Img[2] = new Image()
-    Img[2].src = '/client/img/Orangeblock.png';
+    Img[2].src = '/client/img/Blueblock.png';
     Img[3] = new Image()
-    Img[3].src = '/client/img/Redblock.png';
+    Img[3].src = '/client/img/Greenblock.png';
     Img[4] = new Image()
-    Img[4].src = '/client/img/Greenblock.png';
+    Img[4].src = '/client/img/Cyanblock.png';
     Img[5] = new Image()
     Img[5].src = '/client/img/Blueblock.png';
     Img[6] = new Image()
@@ -71,6 +70,7 @@ body {
 	var Peice = function(data){
 		var self = {
 			blocks:data.blockList,
+            color:data.color,
 		
 		}
 		
@@ -126,6 +126,7 @@ body {
 	//Updates the active peices position`
     socket.on('activeUpdate', function(data){
         if(data.dir == 'rotate'){
+            color = Peice.active.color;
             newBlockList = {}
             var val;
             var count;
@@ -136,14 +137,14 @@ body {
                 while(val > 0){
                     console.log(count);
                     if((val & 1) != 0){
-                        var newBlock = Block(data.color,{x:count, y:i});
+                        var newBlock = Block(color,{x:count, y:i});
                         newBlockList[newBlock.id] = newBlock;
                     }
                     val = val >> 1;
                     count++;
                 }
             }
-            Peice.active = Peice({blockList:newBlockList});
+            Peice.active = Peice({color:color, blockList:newBlockList});
         
         }
         else{
@@ -209,19 +210,9 @@ body {
                 count++;
             }
         }
-        Peice.active = Peice({blockList:newBlockList});
+        Peice.active = Peice({color: data.color, blockList:newBlockList});
         Update()
 	});
-	
-    //Start Button (will remove in the future
-    var startButton = document.getElementById('start');
-	
-    startButton.onclick = function(){
-        socket.emit('start', {time:"Now"});
-		Block.list = {};
-		Peice.active = Peice({blockList:{}});
-    }
-
 	
 </script>
 </html>

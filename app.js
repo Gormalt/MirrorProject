@@ -32,6 +32,11 @@ io.sockets.on('connection', function(socket){
 	socket.id = Math.random();
 	SOCKET_LIST[socket.id] = socket;
     
+    //create a new player for them
+    var player = Player({id:socket.id});
+    
+    Player.list[socket.id] = player;
+    
     //Determine what to do when it disconnects
     socket.on('disconnect', function(){
         
@@ -41,6 +46,19 @@ io.sockets.on('connection', function(socket){
 	Board.onConnect(socket);
 });
 
+var Player = function(params){
+    var self = {
+        id: params.id,
+        active: false,
+        postActive: false,
+        numGames: true,
+        waiting: false,
+    }
+    
+    return self;
+}
+
+Player.list = {};
 
 //The Board object, handles the game logic
 var Board = function(){
@@ -48,6 +66,7 @@ var Board = function(){
     var self = {
         blocks: new Array(15),
         activePiece: new Array(15),
+        gameSpeed: 1,
     }
     
     //Resets the board
@@ -56,7 +75,7 @@ var Board = function(){
         self.activePiece.fill(0);
         
     }
-    
+
     //Moves the peice one block down, sets it if it will be set.
     self.updatePiece = function(){
         
@@ -221,7 +240,7 @@ var Board = function(){
                         self.rotatePiece(dir, up + 1, bound);
                         return;
                     }
-                    
+
                     if(amount < 0){
                         self.rotatePiece(dir, up, bound + 1);
                         return;
@@ -298,7 +317,7 @@ var Board = function(){
             self.activePiece = [0,0,0,0,0,0,0,0,0,0,0,0,0,24,24]
         }
         else{
-            self.activePiece = [0,0,0,0,0,0,0,0,0,0,0,0,0,24,24]
+            self.activePiece = [0,0,0,0,0,0,0,0,0,0,0,0,0,12,24]
         }
         
         if(self.checkOverlap(self.activePiece, self.blocks)){
@@ -314,6 +333,17 @@ var Board = function(){
         Board.sendToAll('setActive', {color:rand, active:self.activePiece});
     }
 
+    self.enqueue = function(){
+        Board.gb.gameStarted = true;
+        Board.gb.reset();
+        Board.gb.spawnNextPiece();
+    }
+
+    self.checkForPlayers = function(){
+        
+        
+    }
+
     return self;
 }
 
@@ -326,7 +356,15 @@ Board.onConnect = function(socket){
         
        Board.gb.movePiece(data.target);
     });
-
+    
+    socket.on('ready', function(data){
+        var player = Player.list[socket.id];
+        player.waiting = true;
+        
+        Board.gb.enqueue(socket.id);
+        
+    });
+    
     socket.on('start', function(data){
         Board.gb.gameStarted = true;
         Board.gb.reset();
@@ -345,18 +383,28 @@ Board.sendToAll = function(name, data){
 //'gb' is the 'gameBoard' its the board of the currently active board.
 Board.gb = Board();
 
-//Every so often, update the board
-setInterval(function(){
 
+var counter = 50;
+//Every so often, update the board
+setInterval(function(){ 
+    
     if(!Board.gb.gameStarted){
-        //What to do while we wait...?
+        Board.gb.checkForPlayers();
     }
     else{
-        Board.gb.updatePiece();
-        console.log("Active:");
-        console.log(Board.gb.activePiece);
-        console.log("Board:");
-        console.log(Board.gb.blocks);
+        if(counter == 0){
+           
+            Board.gb.updatePiece();
+            console.log("Active:");
+            console.log(Board.gb.activePiece);
+            console.log("Board:");
+            console.log(Board.gb.blocks);
+            
+            counter = 50 - Board.gb.gameSpeed;
+        }
+        else{
+            counter--;
+        }
     }
     var pack = {}
     for(var i in SOCKET_LIST){
@@ -364,5 +412,5 @@ setInterval(function(){
         
         var socket = SOCKET_LIST[i];
 	}
-}, 1000/1);    
+}, 1000/50);    
     

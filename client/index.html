@@ -104,6 +104,20 @@ div.titleDiv{
     margin: 10px;
 }
 
+div.waitingPage{
+    margin-top: 9%;
+    margin-bottom:6%;
+    margin-left:auto;
+    margin-right:auto;
+    width:80%;
+    text-align:center;
+}
+
+p.waitingText{
+    margin-top: 40%;
+    font-size:6em;
+}
+
 #pressLeft{
     background-image:url('/client/img/ArrowLeft.png');
     background-size: 150px 150px;
@@ -161,8 +175,13 @@ div.titleDiv{
     </div>
 </div>
 
+<div id = "waiting" class = "waitingPage" style="display:none">
+        <p class="openTitle" style="color:#008CBA;margin-bottom:100px;">AMS Tetris 🕹</p>
+        <p class="waitingText">Waiting for game...</p>
+</div>
+
 <div id = "control" class = "control" style = "display:none;">
-    <p class="openTitle" style="color:#008CBA;margin-bottom:100px;">AMS Tetris 🕹</p>'
+    <p class="openTitle" style="color:#008CBA;margin-bottom:100px;">AMS Tetris 🕹</p>
     <div style = "display:inline-block;width:60%;height:40%;text-align:center;">
         <button class='gameButtons' id = "pressLeft"></button>
         <button class='gameButtons' id = "pressRight"></button>
@@ -194,6 +213,7 @@ div.titleDiv{
     
     var controlDiv = document.getElementById('control');
     var pregameDiv = document.getElementById('pregame');
+    var waitingDiv = document.getElementById('waiting');
     
     var player1Button = document.getElementById('player1');
     var player2Button = document.getElementById('player2');
@@ -225,9 +245,9 @@ div.titleDiv{
     
     
     readyButton.onclick = function(){
-        controlDiv.style.display = 'block';
+        waitingDiv.style.display = 'block';
         pregameDiv.style.display = 'none';
-        //Socket.emit(startTheGamePacket, ...)
+        socket.emit('ready', {});
         
     }
     
