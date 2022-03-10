@@ -2,16 +2,22 @@
 var express = require('express');
 var app = express();
 var serv = require('http').Server(app);
+var fs = require('fs');
 
 //Send the user the 'index.html' file, to let them interact
 app.get('/',function(req, res){
 	res.sendFile(__dirname + '/client/index.html');
 });
+
+//If its the mirror, send the mirror file.
 app.get('/mirror',function(req, res){
 	res.sendFile(__dirname + '/client/mirrorIndex.html');
 });
 
 app.use('/client', express.static(__dirname + '/client'));
+
+const scores = require('./scores.json');
+
 
 //Start the server on a port
 serv.listen(8012);
@@ -32,10 +38,12 @@ io.sockets.on('connection', function(socket){
 	socket.id = Math.random();
 	SOCKET_LIST[socket.id] = socket;
     
-    //create a new player for them
+    //create a new player for them (Not currently doing this, just using socket id)
+    /*
     var player = Player({id:socket.id});
     
     Player.list[socket.id] = player;
+    */
     
     //Determine what to do when it disconnects
     socket.on('disconnect', function(){
@@ -46,6 +54,8 @@ io.sockets.on('connection', function(socket){
 	Board.onConnect(socket);
 });
 
+//NOT CURRENTLY USED!
+//Because only one match happens at a time, the socket can contain all of the player data.
 var Player = function(params){
     var self = {
         id: params.id,
@@ -66,14 +76,21 @@ var Board = function(){
     var self = {
         blocks: new Array(15),
         activePiece: new Array(15),
+        nextPiece: [0,0,0,0,0,0,0,0,0,0,0,16,16,16,16],
+        activeColor: 4,
         gameSpeed: 1,
+        playerQueue: [],
+        currentPlayer: 0,
+        currentScore:0,
+        timer: 0,
     }
     
     //Resets the board
     self.reset = function(){
         self.blocks.fill(0);
         self.activePiece.fill(0);
-        
+        Board.sendToAll('reset', {});
+        self.currentScore = 0;
     }
 
     //Moves the peice one block down, sets it if it will be set.
@@ -183,7 +200,7 @@ var Board = function(){
     }
     
     //Sets THE active peice onto the board (by adding its values to the array)
-    //@Todo Make it so you can place a give peice, not just the active one.
+    //@Todo Make it so you can place a given peice, not just the active one.
     self.setPiece = function(){
         
         count = 0;
@@ -202,9 +219,19 @@ var Board = function(){
             }
                 
         }
-       
-        
+
+        self.updateScore(count);
     }
+    //Updates the score;
+    self.updateScore = function(count){
+        self.currentScore += count*count*1000;
+        while(self.currentScore > self.gameSpeed * self.gameSpeed * 1000){
+            self.gameSpeed++;
+        }
+        Board.sendToAll('UpdateScore', {score:self.currentScore});
+            
+    }
+    
     //Rotates the peice (only in one direction now, must add other direction).
     self.rotatePiece = function(dir, up=0, bound=0){
         var frstPcX = 0;
@@ -304,48 +331,61 @@ var Board = function(){
     //Sets a new random peice as the active piece
     self.spawnNextPiece = function(){
         rand = Math.floor(Math.random() * 5);
+        self.activePiece = self.nextPiece;
+
         if(rand == 4){
-            self.activePiece = [0,0,0,0,0,0,0,0,0,0,0,16,16,16,16]
+            self.nextPiece = [0,0,0,0,0,0,0,0,0,0,0,16,16,16,16];
         }
         else if(rand == 3){
-            self.activePiece = [0,0,0,0,0,0,0,0,0,0,0,0,0,56,8]
+            self.nextPiece = [0,0,0,0,0,0,0,0,0,0,0,0,0,56,8];
         }
         else if(rand == 2){
-            self.activePiece = [0,0,0,0,0,0,0,0,0,0,0,0,0,56,32]
+            self.nextPiece = [0,0,0,0,0,0,0,0,0,0,0,0,0,56,32];
         }
         else if(rand == 1){
-            self.activePiece = [0,0,0,0,0,0,0,0,0,0,0,0,0,24,24]
+            self.nextPiece = [0,0,0,0,0,0,0,0,0,0,0,0,0,24,24];
         }
         else{
-            self.activePiece = [0,0,0,0,0,0,0,0,0,0,0,0,0,12,24]
+            self.nextPiece = [0,0,0,0,0,0,0,0,0,0,0,0,0,12,24];
         }
         
         if(self.checkOverlap(self.activePiece, self.blocks)){
 			
-			Board.gb.gameStarted = false;
-			
-            //@TODO: Ben & Jules 
-            //note that here, we can determine if the game is over (ie, can't spawn a new peice because of overlap.
-            //We will need to add something so that the game stops when this happens.
-            //Will also need to add a way to reset the game (may need another socket.on)
-            //Focus on having everything reset from the server for now.
+			self.timer = 100;
+            self.gameStarted = false;
+			Board.sendToAll('GameOver', {score:self.currentScore});
+            SOCKET_LIST[self.currentPlayer].emit('enterScore', {score:self.currentScore});
+            
         }
-        Board.sendToAll('setActive', {color:rand, active:self.activePiece});
+        Board.sendToAll('setActive', {color:self.activeColor, active:self.activePiece, next:self.nextPiece, nextC:rand});
+        self.activeColor = rand;
     }
 
-    self.enqueue = function(){
-        Board.gb.gameStarted = true;
-        Board.gb.reset();
-        Board.gb.spawnNextPiece();
+    self.enqueue = function(player){
+
+        self.playerQueue.push(player);
+        
     }
 
     self.checkForPlayers = function(){
-        
-        
+        if(self.playerQueue.length > 0){
+            self.currentPlayer = self.playerQueue[0];
+            self.playerQueue = self.playerQueue.slice(1);
+            Board.gb.gameStarted = true;
+            Board.gb.reset();
+            
+            Board.gb.spawnNextPiece();
+            SOCKET_LIST[self.currentPlayer].emit('startTheGame', {});
+            Board.sendToAll('beginMirror', {});
+        }
+        else{
+            //Wait a minute
+        }
     }
 
     return self;
 }
+
 
 
 //This is for player input
@@ -358,8 +398,6 @@ Board.onConnect = function(socket){
     });
     
     socket.on('ready', function(data){
-        var player = Player.list[socket.id];
-        player.waiting = true;
         
         Board.gb.enqueue(socket.id);
         
@@ -370,6 +408,15 @@ Board.onConnect = function(socket){
         Board.gb.reset();
         Board.gb.spawnNextPiece();
     });
+    
+    socket.on('score', function(data){
+        console.log('RECEIVING!');
+        socket.emit('returnScores', setScore(data));
+    });
+    
+    socket.on('getScores', function(data){
+        socket.emit('returnScores', {scores:scores.board});
+    })
 }
 //For the board to send data to all ends connected, usefull for sending out updates.
 Board.sendToAll = function(name, data){
@@ -383,13 +430,46 @@ Board.sendToAll = function(name, data){
 //'gb' is the 'gameBoard' its the board of the currently active board.
 Board.gb = Board();
 
+var setScore = function(score){
+    totalScores = scores;
+    nextScore = score;
+    nextScore.name= nextScore.name.slice(0,3);
+    temp = {};
+
+
+    
+    for(let i = 0; i < totalScores.length; i++){
+        if(totalScores[i].score < parseInt(nextScore.score)){
+            temp = totalScores[i];
+         
+            totalScores[i] = nextScore;
+            nextScore = temp;
+        }
+    }
+    json = JSON.stringify(totalScores);
+    fs.writeFile('scores.json', json, 'utf8', function(err) {
+    if (err) throw err;
+    console.log('complete');
+    });
+    return totalScores;
+}
+
 
 var counter = 50;
 //Every so often, update the board
 setInterval(function(){ 
     
     if(!Board.gb.gameStarted){
-        Board.gb.checkForPlayers();
+
+        if(Board.gb.timer < 1){
+            
+            Board.gb.checkForPlayers();
+            Board.sendToAll('WaitForPlayers', {});
+        }
+        else{
+            
+            Board.gb.timer--;
+        }
     }
     else{
         if(counter == 0){

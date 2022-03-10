@@ -5,14 +5,56 @@
 
 body {
     background-color:black;
+    width:100%;
+    height:100%;
 }
 
 #ctx{
+    left:0;
+    right:0;
+    top: 5%;
+    text-align: center;
     border:4px solid #FFFFFF;
     border-radius:2px;
     display:block;
     margin-left:auto;
     margin-right:auto;
+    position:absolute;
+}
+
+div.pregame{
+    margin-top: 10%;
+    margin-left:auto;
+    margin-right:auto;
+    width: 20%;
+    left:0;
+    right:0;
+    height: 1000px;
+    background-color:#FFFFFF;
+    position: absolute;
+    text-align: center;
+
+}
+
+p {
+    font-family: "Lucida Console", monospace;
+
+}
+
+p.title{
+    margin-top: 10%;
+    margin-bottom:6%;
+    margin-left:auto;
+    margin-right:auto;
+    width:80%;
+    font-size:3em;
+    text-align:center;
+}
+
+img.qrCode{
+    margin-left:auto;
+    margin-right:auto;
+    width:90%;
 }
 
 </style>
@@ -21,6 +63,12 @@ body {
 <div style = "width:100%;height:100%">
 <canvas id="ctx" width = "1080" height = "1920"></canvas>
 </div>
+<div id = "pregameDiv" class = "pregame">
+    <p class = "title" style="color:black">Welcome To AMS Tetris! Scan this QR code to begin.</p>
+    <img class = "qrCode" src="/client/img/qr-code.jpg" alt = "uh oh">
+</div>
+
+
 <script src="/socket.io/socket.io.js"></script>
 <script>
 	//Getting the socket and the document variables
@@ -28,7 +76,8 @@ body {
     var ctx = document.getElementById("ctx").getContext("2d");
 	var WIDTH = 1080;
     var HEIGHT = 1920;
-
+    
+    
     //Preparing all of the images and saving them in a list
     var Img = {};
     Img[0] = new Image()
@@ -54,9 +103,9 @@ body {
 			y: position.y,
             id: Math.random(),
 		}
-		self.draw = function(){
+		self.draw = function(x=0, y=0){
 			//draw the block here
-		    ctx.drawImage(Img[NColor], (self.x)*(WIDTH/12), HEIGHT - (self.y+1)*(WIDTH/12), (WIDTH/12), (WIDTH/12));
+		    ctx.drawImage(Img[NColor], (self.x)*(WIDTH/12) + x, HEIGHT - (self.y+1)*(WIDTH/12) + y, (WIDTH/12), (WIDTH/12));
 		}
         return self;
 	
@@ -73,10 +122,16 @@ body {
             color:data.color,
 		
 		}
-		
+
         self.draw = function(dir){
             for(var i in self.blocks){
                 self.blocks[i].draw();
+            }
+        }
+        
+        self.drawNext = function(dir){
+            for(var i in self.blocks){
+                self.blocks[i].draw(540, -435);
             }
         }
         
@@ -107,23 +162,70 @@ body {
     //Preparing a 'peice' object to hold all the peice data.
     Peice.active = Peice({blockList:{}})
     
+    var score = 0;
+    
+    
+    socket.on('UpdateScore', function(data){
+        score = data.score;
+        Update();
+    });
+    var gameOver = false;
     //Creating an Update function that redraws everything with new data
     var Update = function(){
+    
+        if(gameOver){
+            return;
+        }
         ctx.fillStyle = 'black';
         ctx.fillRect(0,0,WIDTH,HEIGHT);
         for(var i in Block.list){
             Block.list[i].draw();
         }
-
-        
         Peice.active.draw();
+        Peice.next.drawNext();
+        
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = 'white';
+        ctx.font = "45px Lucida Console";
+        ctx.fillStyle = 'white';
+        ctx.fillText("Score",30,40);
+        ctx.strokeRect(0, 0, 200, 100);
+        ctx.fillText(score.toString(), 90 - (score.toString().length*10), 85);
+        ctx.fillText("Next",WIDTH - 200,40);
+        ctx.strokeRect(WIDTH - 400, 50, 400, 400 );
+        
 
     }
     
-    
+
 	//Socket Functions
 
-	//Updates the active peices position`
+//socket function to begin;
+    var gameStartDiv = document.getElementById('pregameDiv');
+    
+    socket.on('beginMirror', function(data){
+        gameStartDiv.style.display = 'none';
+        gameOver = false;
+        
+    });
+	//socket to end;
+    
+    socket.on('GameOver', function(data){
+        ctx.fillStyle = 'white';
+        ctx.font = "200px Lucida Console";
+        ctx.fillText("Game Over", WIDTH/2-(500), HEIGHT/2);
+        gameOver = true;
+    });
+    
+    socket.on('WaitForPlayers', function(data){
+        if(gameOver){
+            gameStartDiv.style.display = 'block';
+            ctx.fillStyle = 'black';
+            ctx.fillRect(0,0,WIDTH,HEIGHT);
+        }
+    });
+    
+    //Updates the active peices position`
     socket.on('activeUpdate', function(data){
         if(data.dir == 'rotate'){
             color = Peice.active.color;
@@ -135,7 +237,7 @@ body {
                 val = data.active[i];
                 
                 while(val > 0){
-                    console.log(count);
+                    
                     if((val & 1) != 0){
                         var newBlock = Block(color,{x:count, y:i});
                         newBlockList[newBlock.id] = newBlock;
@@ -152,6 +254,11 @@ body {
         }
         Update();
         
+    });
+
+    socket.on('reset', function(data){
+        Peice.active.blocks = {};
+        Block.list = [];
     });
     
 	//deletes a saved row of blocks
@@ -193,7 +300,7 @@ body {
             }
         }
         
-        newBlockList = {}
+        newBlockList = {};
         var val;
         var count;
         for(var i = 0; i < data.active.length; i++){
@@ -210,7 +317,27 @@ body {
                 count++;
             }
         }
+        
+        nextList = {};
+        
+        for(var i = 0; i < data.next.length; i++){
+            count = 0;
+            val = data.next[i];
+                
+            while(val > 0){
+            
+                if(val & 1 > 0){
+
+                  
+                   var newBlock = Block(data.nextC,{x:count, y:i});
+                   nextList[newBlock.id] = newBlock;
+                }
+                val = val >> 1;
+                count++;
+            }
+        }
         Peice.active = Peice({color: data.color, blockList:newBlockList});
+        Peice.next = Peice({color: data.nextC, blockList:nextList});
         Update()
 	});
 	
