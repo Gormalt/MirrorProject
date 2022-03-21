@@ -565,7 +565,9 @@ Board.sendToAll = function(name, data){
     
     for(var i in SOCKET_LIST){
         var socket = SOCKET_LIST[i];
-        socket.emit(name, data); 
+        if(socket){
+            socket.emit(name, data);
+        }            
     }
 }
 
