@@ -70,7 +70,7 @@ var Player = function(params){
 
 Player.list = {};
 
-var BOARD_HEIGHT = 25;
+var BOARD_HEIGHT = 35;
 
 //The Board object, handles the game logic
 var Board = function(){
@@ -312,7 +312,9 @@ var Board = function(){
                         self.rotatePiece(dir, up, bound - 1);
                         return;
                     }
-                    
+                    if(index > 35){
+                        return;
+                    }
                     newActive[index] += amount;
 
                 }
