@@ -459,8 +459,13 @@ var Board = function(){
 
     self.checkForPlayers = function(){
         if(self.playerQueue.length > 0){
+            
             self.currentPlayer = self.playerQueue[0];
             self.playerQueue = self.playerQueue.slice(1);
+            if(!(SOCKET_LIST[self.currentPlayer])){
+                return;
+            }
+            
             Board.gb.gameStarted = true;
             Board.gb.reset();
             
