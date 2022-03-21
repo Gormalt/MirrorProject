@@ -611,7 +611,6 @@ setInterval(function(){
             Board.sendToAll('WaitForPlayers', {});
         }
         else{
-            
             Board.gb.timer--;
         }
     }
@@ -620,8 +619,10 @@ setInterval(function(){
            
             Board.gb.updatePiece();
             counter = 50 - Board.gb.gameSpeed;
+            console.log(Board.gb.gameSpeed);
         }
         else{
+            console.log(counter);
             counter--;
         }
     }
