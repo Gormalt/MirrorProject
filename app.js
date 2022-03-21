@@ -397,8 +397,9 @@ var Board = function(){
 			self.timer = 100;
             self.gameStarted = false;
 			Board.sendToAll('GameOver', {score:self.currentScore});
-            SOCKET_LIST[self.currentPlayer].emit('enterScore', {score:self.currentScore});
-            
+            if(SOCKET_LIST[self.currentPlayer]){
+                SOCKET_LIST[self.currentPlayer].emit('enterScore', {score:self.currentScore});
+            }
         }
         
         Board.sendToAll('setActive', {color:self.activeColor, active:self.activePiece, next:self.nextPiece, nextC:self.nextColor});
