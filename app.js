@@ -102,6 +102,7 @@ var Board = function(){
         self.currentScore = 0;
         currPiece = null;
         heldPiece = null;
+        gameSpeed = 1;
     }
 
     
