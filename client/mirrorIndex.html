@@ -119,7 +119,7 @@ img.qrCode{
     Img[1] = new Image()
     Img[1].src = '/client/img/Orangeblock.png';
     Img[2] = new Image()
-    Img[2].src = '/client/img/Blueblock.png';
+    Img[2].src = '/client/img/Purpleblock.png';
     Img[3] = new Image()
     Img[3].src = '/client/img/Brownblock.png';
     Img[4] = new Image()
@@ -127,7 +127,7 @@ img.qrCode{
     Img[5] = new Image()
     Img[5].src = '/client/img/Greenblock.png';
     Img[6] = new Image()
-    Img[6].src = '/client/img/Purpleblock.png';
+    Img[6].src = '/client/img/Blueblock.png';
     Img[7] = new Image()
     Img[7].src = '/client/img/Selector.png';      
     
@@ -344,22 +344,30 @@ img.qrCode{
         
         for(var i in Block.list){
             var block = Block.list[i];
-            if(block.y == data.row){
-                delete Block.list[i];
-            }
-            else if(block.y > data.row){
-                block.y--;
+            
+            for(let j = 0; j < data.row.length; j++){
+                if(block.y == data.row[j]){
+                    delete Block.list[i];
+                }
+                else if(block.y > data.row[j]){
+
+                    block.y--;
+                }
             }
         }
         
         for(var i in Peice.active.blocks){
             var block = Peice.active.blocks[i];
             
-            if(block.y == data.row){
-                delete Peice.active.blocks[i];
-            }
-            else if(block.y > data.row){
-                block.y--;
+            for(let j = 0; j < data.row.length; j++){
+                if( == data.row[j]){
+                    console.log("WHY!");
+                    console.log(data.row);
+                    delete Peice.active.blocks[i];
+                }
+                else if(block.y > data.row[j]){
+                    block.y--;
+                }
             }
             
         }

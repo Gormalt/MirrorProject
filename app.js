@@ -79,7 +79,7 @@ var Board = function(){
         blocks: (new Array(BOARD_HEIGHT)),
         activePiece: (new Array(BOARD_HEIGHT)),
         currPiece: null,
-        nextPiece: [16,16,16,16],
+        nextPiece: [15],
         heldPiece: null,
         p2Indicator: 16,
         activeColor: 4,
@@ -238,13 +238,14 @@ var Board = function(){
     self.setPiece = function(){
         
         count = 0;
-        
+        rowList = [];
         for(let x = 0; x < self.activePiece.length; x++){
             self.blocks[x] = self.blocks[x] + self.activePiece[x];
             
             if(self.blocks[x] >= 4095){
                 count++;
-                Board.sendToAll('deleteRow', {row:x})
+                rowList.push(x);
+                
             }
             else if (count > 0){
                 
@@ -253,7 +254,7 @@ var Board = function(){
             }
                 
         }
-
+        Board.sendToAll('deleteRow', {row:rowList});
         self.updateScore(count);
     }
     //Updates the score;
@@ -344,6 +345,7 @@ var Board = function(){
 
         
     }
+    
     //Finds the center of the active peice (useful for rotation, also is kinda broken)
     self.findActiveCenter = function(){
         max = 0;
@@ -386,7 +388,7 @@ var Board = function(){
         console.log("NEXT PEICE IS:");
         console.log(self.nextPiece);
         self.currPiece = self.nextPiece;
-        self.activePiece = Board.peiceTo(self.nextPiece, {x:0, y:20}, (new Array(BOARD_HEIGHT)).fill(0));
+        self.activePiece = Board.peiceTo(self.nextPiece, {x:5, y:20}, (new Array(BOARD_HEIGHT)).fill(0));
         self.activeColor = self.nextColor;
         self.nextPiece = Board.getRandPeice(rand);
         self.nextColor = rand;
@@ -428,7 +430,7 @@ var Board = function(){
         temp = self.activeColor; 
         self.activeColor = self.heldColor;
         self.heldColor = temp;
-        self.activePiece = Board.peiceTo(self.currPiece, {x:0, y:20}, (new Array(BOARD_HEIGHT)).fill(0));
+        self.activePiece = Board.peiceTo(self.currPiece, {x:5, y:20}, (new Array(BOARD_HEIGHT)).fill(0));
         Board.sendToAll('activeUpdate', {dir:'hold', color:self.activeColor, active:self.activePiece, held:self.heldPiece, heldC: self.heldColor});
     }
     
@@ -502,25 +504,25 @@ Board.getRandPeice = function(rand){
 
     console.log(rand);
     if(rand == 6){
-        piece = [56,16];
+        piece = [7,4];
     }
     else if(rand == 5){
-        piece = [24,12];
+        piece = [6,3];
     }
     else if(rand == 4){
-        piece = [240];
+        piece = [15];
     }
     else if(rand == 3){
-        piece = [56,8];
+        piece = [7,1];
     }
     else if(rand == 2){
-        piece = [56,32];
+        piece = [7,2];
     }
     else if(rand == 1){
-        piece = [24,24];
+        piece = [3,3];
     }
     else{
-        piece = [12,24];
+        piece = [4,7];
     }
     
     return piece;
