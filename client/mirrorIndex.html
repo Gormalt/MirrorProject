@@ -13,13 +13,25 @@ body {
     left:0;
     right:0;
     top: 5%;
-    text-align: center;
-    border:4px solid #FFFFFF;
-    border-radius:2px;
+
     display:block;
     margin-left:auto;
     margin-right:auto;
     position:absolute;
+}
+canvas {
+    text-align: center;
+    border:4px solid #FFFFFF;
+    border-radius:2px;
+    margin-left:auto;
+    margin-right:auto;
+
+}
+div.others{
+    top:120px;
+    left: 1700px;
+    position:absolute;
+    text-align:center;
 }
 
 div.pregame{
@@ -61,7 +73,13 @@ img.qrCode{
 </head>
 
 <div style = "width:100%;height:100%">
-<canvas id="ctx" width = "1080" height = "1920"></canvas>
+    <canvas id="ctx" width = "1080" height = "1920"></canvas>
+    <canvas id="ctx3" width = "400" height = "300"></canvas>
+    <div class = "others">
+        <canvas id="ctx1" width = "400" height = "300"></canvas>
+        <br>
+        <canvas id="ctx2" width = "200" height = "100"></canvas>
+    </div>
 </div>
 <div id = "pregameDiv" class = "pregame">
     <p class = "title" style="color:black">Welcome To AMS Tetris! Scan this QR code to begin.</p>
@@ -71,10 +89,26 @@ img.qrCode{
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
+    var ACTIVEGAME = false;
 	//Getting the socket and the document variables
     var socket = io();
+    var ctx = {};
+    ctx[0] = document.getElementById("ctx").getContext("2d");
+    ctx[1] = document.getElementById("ctx1").getContext("2d");
+    ctx[2] = document.getElementById("ctx2").getContext("2d");
+    ctx[3] = document.getElementById("ctx3").getContext("2d");
+    
+    var canvas = {};
+    canvas[0] = document.getElementById("ctx");
+    canvas[1] = document.getElementById("ctx1");
+    canvas[2] = document.getElementById("ctx2");
+    canvas[3] = document.getElementById("ctx3");
+    /*
     var ctx = document.getElementById("ctx").getContext("2d");
-	var WIDTH = 1080;
+    var ctx1 = document.getElementById("ctx1").getContext("2d");
+    var ctx2 = document.getElementById("ctx2").getContext("2d");
+	*/
+    var WIDTH = 1080;
     var HEIGHT = 1920;
     
     
@@ -87,13 +121,15 @@ img.qrCode{
     Img[2] = new Image()
     Img[2].src = '/client/img/Blueblock.png';
     Img[3] = new Image()
-    Img[3].src = '/client/img/Greenblock.png';
+    Img[3].src = '/client/img/Brownblock.png';
     Img[4] = new Image()
     Img[4].src = '/client/img/Cyanblock.png';
     Img[5] = new Image()
-    Img[5].src = '/client/img/Blueblock.png';
+    Img[5].src = '/client/img/Greenblock.png';
     Img[6] = new Image()
-    Img[6].src = '/client/img/Purpleblock.png';    
+    Img[6].src = '/client/img/Purpleblock.png';
+    Img[7] = new Image()
+    Img[7].src = '/client/img/Selector.png';      
     
 	//The Block class, remembers position and color
 	var Block = function(NColor, position){ 
@@ -103,17 +139,21 @@ img.qrCode{
 			y: position.y,
             id: Math.random(),
 		}
-		self.draw = function(x=0, y=0){
+		self.draw = function(x=0, y=0, context=0){
 			//draw the block here
-		    ctx.drawImage(Img[NColor], (self.x)*(WIDTH/12) + x, HEIGHT - (self.y+1)*(WIDTH/12) + y, (WIDTH/12), (WIDTH/12));
+            width = canvas[0].width;
+            height = canvas[context].height;
+		    ctx[context].drawImage(Img[NColor], (self.x)*(width/12) + x, height - (self.y+1)*(width/12) + y, (width/12), (width/12));
 		}
         return self;
 	
 	}
     
     //Preparing a list of all blocks to keep track of.
-	Block.list = {}
+	Block.list = {};
     
+    //The p2 Indicator
+    Block.indicator = Block(7, {x:4, y:20});
     
     //The Peice class, holds a list of all blocks.
 	var Peice = function(data){
@@ -123,17 +163,12 @@ img.qrCode{
 		
 		}
 
-        self.draw = function(dir){
+        self.draw = function(x=0,y=0,cont = 0){
             for(var i in self.blocks){
-                self.blocks[i].draw();
+                self.blocks[i].draw(x,y,cont);
             }
         }
         
-        self.drawNext = function(dir){
-            for(var i in self.blocks){
-                self.blocks[i].draw(540, -435);
-            }
-        }
         
 		self.move = function(dir){
 			for(var i in self.blocks){
@@ -166,33 +201,67 @@ img.qrCode{
     
     
     socket.on('UpdateScore', function(data){
+        
         score = data.score;
         Update();
     });
+    
+    //When the indicator moves
+    socket.on('MoveIndicator', function (data){
+        if (data.dir == 'left'){
+            block.indicator.x--;
+        
+        }
+        else if(data.dir == 'right'){
+            block.indicator.x++;
+        }
+    });
+    
+    //Socket.on Activate Ability
+    //Activate an ability
+    
     var gameOver = false;
     //Creating an Update function that redraws everything with new data
     var Update = function(){
-    
+        ACTIVEGAME = true;
         if(gameOver){
             return;
         }
-        ctx.fillStyle = 'black';
-        ctx.fillRect(0,0,WIDTH,HEIGHT);
+        
+        ctx[0].fillStyle = 'black';
+        ctx[0].fillRect(0,0,WIDTH,HEIGHT);
+        ctx[1].fillStyle = 'black';
+        ctx[1].fillRect(0,0,WIDTH,HEIGHT);
+        ctx[2].fillStyle = 'black';
+        ctx[2].fillRect(0,0,WIDTH,HEIGHT);
+        
         for(var i in Block.list){
             Block.list[i].draw();
         }
         Peice.active.draw();
-        Peice.next.drawNext();
+        Peice.next.draw(x=25,y = -25,cont=1);
+ //         To draw p2Indicator
+ //       Block.indicator.draw();
         
-        ctx.lineWidth = 5;
-        ctx.strokeStyle = 'white';
-        ctx.font = "45px Lucida Console";
-        ctx.fillStyle = 'white';
-        ctx.fillText("Score",30,40);
-        ctx.strokeRect(0, 0, 200, 100);
-        ctx.fillText(score.toString(), 90 - (score.toString().length*10), 85);
-        ctx.fillText("Next",WIDTH - 200,40);
-        ctx.strokeRect(WIDTH - 400, 50, 400, 400 );
+        ctx[2].lineWidth = 5;
+        ctx[2].strokeStyle = 'white';
+        ctx[2].font = "45px Lucida Console";
+        ctx[2].fillStyle = 'white';
+        ctx[2].fillText("Score",30,40);
+        ctx[2].strokeRect(0, 0, 200, 100);      
+        ctx[2].fillText(score.toString(), 90 - (score.toString().length*10), 85);
+        
+        ctx[1].lineWidth = 5;
+        ctx[1].strokeStyle = 'white';
+        ctx[1].font = "45px Lucida Console";
+        ctx[1].fillStyle = 'white';
+        ctx[1].fillText("Next",150,40);
+        
+        ctx[3].lineWidth = 5;
+        ctx[3].strokeStyle = 'white';
+        ctx[3].font = "45px Lucida Console";
+        ctx[3].fillStyle = 'white';
+        ctx[3].fillText("Hold",150,40);
         
 
     }
@@ -200,10 +269,11 @@ img.qrCode{
 
 	//Socket Functions
 
-//socket function to begin;
+    //socket function to begin;
     var gameStartDiv = document.getElementById('pregameDiv');
     
     socket.on('beginMirror', function(data){
+        ACTIVEGAME = true;
         gameStartDiv.style.display = 'none';
         gameOver = false;
         
@@ -211,24 +281,24 @@ img.qrCode{
 	//socket to end;
     
     socket.on('GameOver', function(data){
-        ctx.fillStyle = 'white';
-        ctx.font = "200px Lucida Console";
-        ctx.fillText("Game Over", WIDTH/2-(500), HEIGHT/2);
+        ctx[0].fillStyle = 'white';
+        ctx[0].font = "200px Lucida Console";
+        ctx[0].fillText("Game Over", WIDTH/2-(500), HEIGHT/2);
         gameOver = true;
     });
     
     socket.on('WaitForPlayers', function(data){
         if(gameOver){
             gameStartDiv.style.display = 'block';
-            ctx.fillStyle = 'black';
-            ctx.fillRect(0,0,WIDTH,HEIGHT);
+            ctx[0].fillStyle = 'black';
+            ctx[0].fillRect(0,0,WIDTH,HEIGHT);
         }
     });
     
     //Updates the active peices position`
     socket.on('activeUpdate', function(data){
-        if(data.dir == 'rotate'){
-            color = Peice.active.color;
+        if(data.dir == 'rotate' || data.dir == 'hold'){
+            color = data.color;
             newBlockList = {}
             var val;
             var count;
@@ -246,8 +316,16 @@ img.qrCode{
                     count++;
                 }
             }
+
+            if(data.dir == 'hold'){
+                ctx[3].fillStyle = 'black';
+                ctx[3].fillRect(0,0,400,400);
+                Peice.held = Peice({color:data.heldC, blockList:GetBlockList(data.held, data.heldC, true)});
+                console.log(data.held);
+                Peice.held.draw(x=25,y = -25,cont=3);
+            }
             Peice.active = Peice({color:color, blockList:newBlockList});
-        
+
         }
         else{
             Peice.active.move(data.dir);
@@ -318,28 +396,67 @@ img.qrCode{
             }
         }
         
-        nextList = {};
+        nextList = GetBlockList(data.next, data.nextC, offset=true);
         
-        for(var i = 0; i < data.next.length; i++){
-            count = 0;
-            val = data.next[i];
-                
-            while(val > 0){
-            
-                if(val & 1 > 0){
-
-                  
-                   var newBlock = Block(data.nextC,{x:count, y:i});
-                   nextList[newBlock.id] = newBlock;
-                }
-                val = val >> 1;
-                count++;
-            }
-        }
+        
         Peice.active = Peice({color: data.color, blockList:newBlockList});
         Peice.next = Peice({color: data.nextC, blockList:nextList});
         Update()
 	});
 	
+    var GetBlockList = function(data, color, offset=false){
+        
+        nextList = {};
+        
+        firstX = 12;
+        firstY = 32;
+        
+        for(var i = 0; i < data.length; i++){
+            count = 0;
+            val = data[i];
+                
+            while(val > 0){
+            
+                if(val & 1 > 0){
+                   
+                  
+                   var newBlock = Block(color,{x:count, y:i});
+                   nextList[newBlock.id] = newBlock;
+                   
+                   //Code for next/hold blocks
+                   if(offset){
+                        if(count < firstX){
+                            firstX = count;
+                        }
+                        if(i < firstY){
+                            firstY = i;
+                        }
+                   }
+                }
+                val = val >> 1;
+                count++;
+            }
+        }
+
+        if(offset){
+            for(var i in nextList){
+                block = nextList[i];
+                block.x = block.x - firstX;
+                block.y = block.y - firstY;
+
+            }
+        }
+        
+        return nextList;
+    }
+
+setInterval(function(){ 
+    if(ACTIVEGAME == false){
+       location.reload();
+    }else{
+        ACTIVEGAME = false;
+    }
+}, 500*1000);
+
 </script>
 </html>

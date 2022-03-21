@@ -70,19 +70,28 @@ var Player = function(params){
 
 Player.list = {};
 
+var BOARD_HEIGHT = 25;
+
 //The Board object, handles the game logic
 var Board = function(){
     
     var self = {
-        blocks: new Array(15),
-        activePiece: new Array(15),
-        nextPiece: [0,0,0,0,0,0,0,0,0,0,0,16,16,16,16],
+        blocks: (new Array(BOARD_HEIGHT)),
+        activePiece: (new Array(BOARD_HEIGHT)),
+        currPiece: null,
+        nextPiece: [16,16,16,16],
+        heldPiece: null,
+        p2Indicator: 16,
         activeColor: 4,
+        nextColor: 4,
+        heldColor:null,
         gameSpeed: 1,
         playerQueue: [],
+        player2List: {},
         currentPlayer: 0,
         currentScore:0,
         timer: 0,
+        readyHold: true,
     }
     
     //Resets the board
@@ -91,8 +100,11 @@ var Board = function(){
         self.activePiece.fill(0);
         Board.sendToAll('reset', {});
         self.currentScore = 0;
+        currPiece = null;
+        heldPiece = null;
     }
 
+    
     //Moves the peice one block down, sets it if it will be set.
     self.updatePiece = function(){
         
@@ -118,10 +130,30 @@ var Board = function(){
         
         
     }
+    //Moves player2
+    self.moveP2Indicator = function(dir){
+        if(dir == 'left'){
+             if(!self.checkBounds(self.activePiece, -1)){
+                    return;
+             }
+             
+             self.p2Indicator = self.p2Indicator >> 1;
+             //Socket emit it
+          
+        }
+        else if(dir == 'right'){
+             if(!self.checkBounds(self.activePiece, 1)){
+                    return;
+             }
+             self.p2Indicator = self.p2Indicator << 1;
+             //Socket emit
+          
+        }
+    }
     
     //Moves the piece in the given direction (or rotates it)
     self.movePiece = function(dir){
-        testPiece = new Array(15);
+        testPiece = new Array(BOARD_HEIGHT).fill(0);
         testPiece.fill(0);
 
         if(dir == 'down'){
@@ -129,7 +161,7 @@ var Board = function(){
             }
         }
         else if(dir == 'rotateR' || dir == 'rotateL'){
-            self.rotatePiece(dir)
+            self.rotatePiece(dir);
         }
         else{
             if(dir == 'left'){
@@ -199,6 +231,8 @@ var Board = function(){
         return true;
     }
     
+    
+    
     //Sets THE active peice onto the board (by adding its values to the array)
     //@Todo Make it so you can place a given peice, not just the active one.
     self.setPiece = function(){
@@ -238,7 +272,7 @@ var Board = function(){
         var frstPcY = 0;
         
         found = false;
-        newActive = new Array(15);
+        newActive = (new Array(BOARD_HEIGHT)).fill(0);
         newActive.fill(0);
         center = self.findActiveCenter();
                     
@@ -287,7 +321,7 @@ var Board = function(){
         }
         
         if(!self.checkOverlap(newActive, self.blocks)){
-            Board.sendToAll('activeUpdate', {dir:'rotate', color:'black', active:newActive});
+            Board.sendToAll('activeUpdate', {dir:'rotate', color:self.activeColor, active:newActive});
             self.activePiece = newActive;
         }
         else{
@@ -295,7 +329,21 @@ var Board = function(){
         }
     }
     
-   
+    //changes the activePeice @TODO REMOVE
+    self.changeActive = function(blockNum){
+            
+            for(let x = 0; x < self.activePeice.length; x++){
+                if(self.active.Peice[x] > 9){
+                    yPos = x;
+                }
+            }
+            
+            if(blockNum = 1){
+                self.activePeice = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,16,16,16,16];
+            }
+
+        
+    }
     //Finds the center of the active peice (useful for rotation, also is kinda broken)
     self.findActiveCenter = function(){
         max = 0;
@@ -330,37 +378,80 @@ var Board = function(){
     }
     //Sets a new random peice as the active piece
     self.spawnNextPiece = function(){
-        rand = Math.floor(Math.random() * 5);
-        self.activePiece = self.nextPiece;
-
-        if(rand == 4){
-            self.nextPiece = [0,0,0,0,0,0,0,0,0,0,0,16,16,16,16];
-        }
-        else if(rand == 3){
-            self.nextPiece = [0,0,0,0,0,0,0,0,0,0,0,0,0,56,8];
-        }
-        else if(rand == 2){
-            self.nextPiece = [0,0,0,0,0,0,0,0,0,0,0,0,0,56,32];
-        }
-        else if(rand == 1){
-            self.nextPiece = [0,0,0,0,0,0,0,0,0,0,0,0,0,24,24];
-        }
-        else{
-            self.nextPiece = [0,0,0,0,0,0,0,0,0,0,0,0,0,12,24];
-        }
+        
+        self.readyHold = true;
+        
+        rand = Math.floor(Math.random() * 7);
+        console.log("SPAWNING NEXT");
+        console.log("NEXT PEICE IS:");
+        console.log(self.nextPiece);
+        self.currPiece = self.nextPiece;
+        self.activePiece = Board.peiceTo(self.nextPiece, {x:0, y:20}, (new Array(BOARD_HEIGHT)).fill(0));
+        self.activeColor = self.nextColor;
+        self.nextPiece = Board.getRandPeice(rand);
+        self.nextColor = rand;
+        console.log("NOW ITS:")
+        console.log(self.nextPiece);
         
         if(self.checkOverlap(self.activePiece, self.blocks)){
-			
+			//GAMEOVER
 			self.timer = 100;
             self.gameStarted = false;
 			Board.sendToAll('GameOver', {score:self.currentScore});
             SOCKET_LIST[self.currentPlayer].emit('enterScore', {score:self.currentScore});
             
         }
-        Board.sendToAll('setActive', {color:self.activeColor, active:self.activePiece, next:self.nextPiece, nextC:rand});
-        self.activeColor = rand;
+        
+        Board.sendToAll('setActive', {color:self.activeColor, active:self.activePiece, next:self.nextPiece, nextC:self.nextColor});
+        
     }
+    //Puts the active piece into hold
+    self.holdActive = function(){
 
+        console.log(self.readyHold);
+        if(!self.readyHold){
+            return;
+        }
+        self.readyHold = false;
+
+        if(self.heldPiece == null){
+            self.heldPiece = self.currPiece;
+            self.heldColor = self.activeColor;
+            self.activePiece = [];
+            Board.sendToAll('activeUpdate', {dir:'hold', color:self.activeColor, active:[], held:self.heldPiece, heldC: self.heldColor});
+            self.spawnNextPiece();
+            return;
+        }
+        temp = self.currPiece;
+        self.currPiece = self.heldPiece;
+        self.heldPiece = temp;
+        temp = self.activeColor; 
+        self.activeColor = self.heldColor;
+        self.heldColor = temp;
+        self.activePiece = Board.peiceTo(self.currPiece, {x:0, y:20}, (new Array(BOARD_HEIGHT)).fill(0));
+        Board.sendToAll('activeUpdate', {dir:'hold', color:self.activeColor, active:self.activePiece, held:self.heldPiece, heldC: self.heldColor});
+    }
+    
+    //Places a target into the board at the set position.
+    self.swapPeiceWithActive = function(target){
+           
+        count = 0;
+        for(let i = 0; i < self.active.length; i++){
+            if(self.active.length[i] > 0){
+                val = self.active.length[i];
+                while(val > 0){
+                    if((val & 1) > 0){
+                        //Setting the active to a new peice.
+                        self.active = Board.peiceTo(target, {x:count, y:i}, new Array(BOARD_HEIGHT));
+                    }
+                    val = val >> 1;
+                    count++;
+                }
+            }
+        }
+    }
+    
+    
     self.enqueue = function(player){
 
         self.playerQueue.push(player);
@@ -387,14 +478,69 @@ var Board = function(){
 }
 
 
+//Adds a given peice to the toArray at given 'pos' (with x and y) and returns it.
+//This does NOT currently mutate the original
+Board.peiceTo = function(peice, pos, toArray){
+
+    newArray = Array.from(toArray);
+    for(let i = 0; i < peice.length; i++){
+        
+        if((peice[i] << pos.x) >= 4096){
+            return Board.peiceTo(peice, {x:pos.x-1, y:pos.y}, toArray);
+        }
+        
+        newArray[i + pos.y] = (peice[i] << pos.x);
+        
+    }
+
+    return newArray;
+}
+
+
+Board.getRandPeice = function(rand){
+    piece = [];
+
+    console.log(rand);
+    if(rand == 6){
+        piece = [56,16];
+    }
+    else if(rand == 5){
+        piece = [24,12];
+    }
+    else if(rand == 4){
+        piece = [240];
+    }
+    else if(rand == 3){
+        piece = [56,8];
+    }
+    else if(rand == 2){
+        piece = [56,32];
+    }
+    else if(rand == 1){
+        piece = [24,24];
+    }
+    else{
+        piece = [12,24];
+    }
+    
+    return piece;
+        
+}
 
 //This is for player input
 //@TODO add other info on connect.
 Board.onConnect = function(socket){
     
     socket.on('inputPack', function(data){
-        
-       Board.gb.movePiece(data.target);
+       if(Board.gb.gameStarted){
+            Board.gb.movePiece(data.target);
+       }
+    });
+    
+    socket.on('hold', function(data){
+        if(Board.gb.gameStarted){
+            Board.gb.holdActive();
+        }
     });
     
     socket.on('ready', function(data){
@@ -479,7 +625,10 @@ setInterval(function(){
             console.log(Board.gb.activePiece);
             console.log("Board:");
             console.log(Board.gb.blocks);
-            
+            console.log("Held:");
+            console.log(Board.gb.heldPiece);
+            console.log("CurrPiece");
+            console.log(Board.gb.currPiece);
             counter = 50 - Board.gb.gameSpeed;
         }
         else{

@@ -103,9 +103,9 @@ div.titleDiv{
 }
 
 .gameButtons{
-    margin: 40px;
-    width: 150px;
-    height: 150px;
+    margin: 10px;
+    width: 200px;
+    height: 200px;
     border: none;
 }
 
@@ -134,15 +134,15 @@ p.s{
 }
 #pressLeft{
     background-image:url('/client/img/ArrowLeft.png');
-    background-size: 150px 150px;
+    background-size: 200px 200px;
 }
 #pressRight{
     background-image:url('/client/img/ArrowRight.png');
-    background-size: 150px 150px;
+    background-size: 200px 200px;
 }
 #pressDown{
     background-image:url('/client/img/ArrowDown.png');
-    background-size: 150px 150px;
+    background-size: 200px 200px;
 }
 #rotateL{
     background-image:url('/client/img/RotateLeft.png');
@@ -152,7 +152,11 @@ p.s{
     background-image:url('/client/img/RotateRight.png');
     background-size: 200px 200px;
 }
+#hold{
+    background-image:url('/client/img/Hold.png');
+    background-size: 400px 200px;
 
+}
 
 </style>
 
@@ -196,18 +200,25 @@ p.s{
 
 <div id = "control" class = "control" style = "display:none;">
     <p class="openTitle" style="color:#008CBA;margin-bottom:100px;">AMS Tetris 🕹</p>
-    <div style = "display:inline-block;width:60%;height:40%;text-align:center;">
+    <div style = "display:block;margin-left:auto;margin-right:auto;width:60%;height:40%;text-align:center;">
         <button class='gameButtons' id = "pressLeft"></button>
         <button class='gameButtons' id = "pressRight"></button>
         <br>
-        <button class='gameButtons' id = "pressDown"></button>  
+        <button class='gameButtons' id = "pressDown"></button> 
+
     </div>
-    <div style = "display:inline-block;width:25%;height:50%;text-align:center;">
+    <div style = "display:block;margin-left:auto;margin-right:auto;width:25%;height:50%;text-align:center;">
         <button class='rotateButton' id = "rotateR"></button>
-        <br>
         <button class='rotateButton' id = "rotateL"></button>
+        <br>
+        <button class ='gameButtons' style="width:400px" id = "hold"></button>
     </div>
 </div>
+
+<div id = "p2control">
+
+</div>
+
 <div id = "score" style="display:none;text-align:center;">
 
     <p class = "scoreText">Your score is:</p>
@@ -377,7 +388,7 @@ p.s{
     var downButton = document.getElementById('pressDown');
     var rotateRButton = document.getElementById('rotateR');
     var rotateLButton = document.getElementById('rotateL');
-    
+    var holdButton = document.getElementById('hold');
     //sets the function when the button is clicked
     leftButton.onclick = function(){
         socket.emit('inputPack', {target:"left"});
@@ -393,6 +404,9 @@ p.s{
     }
     rotateLButton.onclick = function(){
         socket.emit('inputPack', {target:"rotateR"});
+    }
+    holdButton.onclick = function(){
+        socket.emit('hold', {target:'now'});
     }
 
 </script>
