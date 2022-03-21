@@ -260,7 +260,7 @@ var Board = function(){
     //Updates the score;
     self.updateScore = function(count){
         self.currentScore += count*count*1000;
-        while(self.currentScore > self.gameSpeed * self.gameSpeed * 1000){
+        while(self.currentScore > self.gameSpeed * 1000){
             self.gameSpeed++;
         }
         Board.sendToAll('UpdateScore', {score:self.currentScore});
@@ -384,16 +384,12 @@ var Board = function(){
         self.readyHold = true;
         
         rand = Math.floor(Math.random() * 7);
-        console.log("SPAWNING NEXT");
-        console.log("NEXT PEICE IS:");
-        console.log(self.nextPiece);
+
         self.currPiece = self.nextPiece;
         self.activePiece = Board.peiceTo(self.nextPiece, {x:5, y:20}, (new Array(BOARD_HEIGHT)).fill(0));
         self.activeColor = self.nextColor;
         self.nextPiece = Board.getRandPeice(rand);
         self.nextColor = rand;
-        console.log("NOW ITS:")
-        console.log(self.nextPiece);
         
         if(self.checkOverlap(self.activePiece, self.blocks)){
 			//GAMEOVER
@@ -410,7 +406,6 @@ var Board = function(){
     //Puts the active piece into hold
     self.holdActive = function(){
 
-        console.log(self.readyHold);
         if(!self.readyHold){
             return;
         }
@@ -502,7 +497,6 @@ Board.peiceTo = function(peice, pos, toArray){
 Board.getRandPeice = function(rand){
     piece = [];
 
-    console.log(rand);
     if(rand == 6){
         piece = [7,4];
     }
@@ -522,7 +516,7 @@ Board.getRandPeice = function(rand){
         piece = [3,3];
     }
     else{
-        piece = [4,7];
+        piece = [3,6];
     }
     
     return piece;
@@ -558,7 +552,6 @@ Board.onConnect = function(socket){
     });
     
     socket.on('score', function(data){
-        console.log('RECEIVING!');
         socket.emit('returnScores', setScore(data));
     });
     
@@ -597,7 +590,6 @@ var setScore = function(score){
     json = JSON.stringify(totalScores);
     fs.writeFile('scores.json', json, 'utf8', function(err) {
     if (err) throw err;
-    console.log('complete');
     });
     return totalScores;
 }
@@ -623,14 +615,6 @@ setInterval(function(){
         if(counter == 0){
            
             Board.gb.updatePiece();
-            console.log("Active:");
-            console.log(Board.gb.activePiece);
-            console.log("Board:");
-            console.log(Board.gb.blocks);
-            console.log("Held:");
-            console.log(Board.gb.heldPiece);
-            console.log("CurrPiece");
-            console.log(Board.gb.currPiece);
             counter = 50 - Board.gb.gameSpeed;
         }
         else{
@@ -643,5 +627,5 @@ setInterval(function(){
         
         var socket = SOCKET_LIST[i];
 	}
-}, 1000/50);    
+}, 1000/65);    
     

@@ -33,6 +33,11 @@ div.others{
     position:absolute;
     text-align:center;
 }
+#ctx3{
+    top:120px;
+    left:100px;
+    position:absolute;
+}
 
 div.pregame{
     margin-top: 10%;
@@ -321,7 +326,6 @@ img.qrCode{
                 ctx[3].fillStyle = 'black';
                 ctx[3].fillRect(0,0,400,400);
                 Peice.held = Peice({color:data.heldC, blockList:GetBlockList(data.held, data.heldC, true)});
-                console.log(data.held);
                 Peice.held.draw(x=25,y = -25,cont=3);
             }
             Peice.active = Peice({color:color, blockList:newBlockList});
@@ -345,13 +349,15 @@ img.qrCode{
         for(var i in Block.list){
             var block = Block.list[i];
             
-            for(let j = 0; j < data.row.length; j++){
-                if(block.y == data.row[j]){
-                    delete Block.list[i];
-                }
-                else if(block.y > data.row[j]){
-
-                    block.y--;
+            if(data.row.includes(block.y)){
+                delete Block.list[i];
+            }
+            else{
+                yVal = block.y;
+                for(let j = 0; j < data.row.length; j++){
+                    if(yVal > data.row[j]){
+                        block.y--;
+                    }
                 }
             }
         }
@@ -359,14 +365,16 @@ img.qrCode{
         for(var i in Peice.active.blocks){
             var block = Peice.active.blocks[i];
             
-            for(let j = 0; j < data.row.length; j++){
-                if( == data.row[j]){
-                    console.log("WHY!");
-                    console.log(data.row);
-                    delete Peice.active.blocks[i];
-                }
-                else if(block.y > data.row[j]){
-                    block.y--;
+            if(data.row.includes(block.y)){
+                delete Peice.active.blocks[i];
+            }
+            else{
+                yVal = block.y;
+                for(let j = 0; j < data.row.length; j++){
+
+                    if(yVal > data.row[j]){
+                        block.y--;
+                    }
                 }
             }
             
