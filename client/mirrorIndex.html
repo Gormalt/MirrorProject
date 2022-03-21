@@ -228,6 +228,7 @@ img.qrCode{
     var gameOver = false;
     //Creating an Update function that redraws everything with new data
     var Update = function(){
+        
         ACTIVEGAME = true;
         if(gameOver){
             return;
@@ -290,6 +291,7 @@ img.qrCode{
         ctx[0].font = "200px Lucida Console";
         ctx[0].fillText("Game Over", WIDTH/2-(500), HEIGHT/2);
         gameOver = true;
+        score = 0;
     });
     
     socket.on('WaitForPlayers', function(data){

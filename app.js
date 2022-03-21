@@ -100,9 +100,9 @@ var Board = function(){
         self.activePiece.fill(0);
         Board.sendToAll('reset', {});
         self.currentScore = 0;
-        currPiece = null;
-        heldPiece = null;
-        gameSpeed = 1;
+        self.currPiece = null;
+        self.heldPiece = null;
+        self.gameSpeed = 1;
     }
 
     
@@ -619,10 +619,9 @@ setInterval(function(){
            
             Board.gb.updatePiece();
             counter = 50 - Board.gb.gameSpeed;
-            console.log(Board.gb.gameSpeed);
+
         }
         else{
-            console.log(counter);
             counter--;
         }
     }
