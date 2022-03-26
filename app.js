@@ -29,14 +29,22 @@ var SOCKET_LIST = {};
 //Creating the io object (to help us talk with the sockets)
 var io = require('socket.io')(serv,{});
 
-
+//For analytics (see bottom)
+var statsToday = {
+    games:0,
+    users:0,
+    scoreTotal:0
+    
+}
 //Setting up what to do when someone connects
 io.sockets.on('connection', function(socket){
     
     //Give it an ID and add it to the list
-	console.log('socket connection');
+	//console.log('socket connection');
 	socket.id = Math.random();
 	SOCKET_LIST[socket.id] = socket;
+    
+    statsToday.users = statsToday.users + 1;
     
     //create a new player for them (Not currently doing this, just using socket id)
     /*
@@ -53,6 +61,9 @@ io.sockets.on('connection', function(socket){
     
 	Board.onConnect(socket);
 });
+
+
+
 
 //NOT CURRENTLY USED!
 //Because only one match happens at a time, the socket can contain all of the player data.
@@ -398,6 +409,10 @@ var Board = function(){
 			//GAMEOVER
 			self.timer = 100;
             self.gameStarted = false;
+            
+            statsToday.games = statsToday.games + 1;
+            statsToday.scoreTotal = statsToday.scoreTotal + self.currentScore;
+            
 			Board.sendToAll('GameOver', {score:self.currentScore});
             if(SOCKET_LIST[self.currentPlayer]){
                 SOCKET_LIST[self.currentPlayer].emit('enterScore', {score:self.currentScore});
@@ -639,4 +654,24 @@ setInterval(function(){
         var socket = SOCKET_LIST[i];
 	}
 }, 1000/65);    
+
+//Set to log stuff once a day
+setInterval(function(){
     
+    const d = new Date();
+    preString = d.getYear().toString() + '_' + (d.getMonth() + 1).toString() + '_' + d.getDate().toString() + '_' + d.getTime();
+    console.log("Logging Daily Activities for:");
+    console.log(preString);
+    
+    json = JSON.stringify(statsToday);
+    fs.writeFile('./logs/' + preString + '.json', json, 'utf8', function(err) {
+    if (err) throw err;
+    });
+    
+    statsToday = {
+        games:0,
+        users:0,
+        scoreTotal:0
+    }
+    
+}, 86400000);    
