@@ -251,7 +251,11 @@ img.qrCode{
         
         ctx[2].lineWidth = 5;
         ctx[2].strokeStyle = 'white';
+<<<<<<< Updated upstream
         ctx[2].font = "70px Lucida Console";
+=======
+        ctx[2].font = "45px Courier New";
+>>>>>>> Stashed changes
         ctx[2].fillStyle = 'white';
         ctx[2].fillText("Score",20,40);
         ctx[2].strokeRect(0, 0, 200, 100);      
@@ -259,13 +263,21 @@ img.qrCode{
         
         ctx[1].lineWidth = 5;
         ctx[1].strokeStyle = 'white';
+<<<<<<< Updated upstream
         ctx[1].font = "70px Lucida Console";
+=======
+        ctx[1].font = "45px Courier New";
+>>>>>>> Stashed changes
         ctx[1].fillStyle = 'white';
         ctx[1].fillText("Next",130,40);
         
         ctx[3].lineWidth = 5;
         ctx[3].strokeStyle = 'white';
+<<<<<<< Updated upstream
         ctx[3].font = "70px Lucida Console";
+=======
+        ctx[3].font = "45px Courier New";
+>>>>>>> Stashed changes
         ctx[3].fillStyle = 'white';
         ctx[3].fillText("Hold",130,40);
         
@@ -288,7 +300,7 @@ img.qrCode{
     
     socket.on('GameOver', function(data){
         ctx[0].fillStyle = 'white';
-        ctx[0].font = "180px Lucida Console";
+        ctx[0].font = "180px Courier New";
         ctx[0].fillText("Game Over", 60, HEIGHT/2);
         gameOver = true;
         score = 0;
