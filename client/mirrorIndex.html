@@ -332,6 +332,10 @@ img.qrCode{
                 Peice.held = Peice({color:data.heldC, blockList:GetBlockList(data.held, data.heldC, true)});
                 Peice.held.draw(x=25,y = -25,cont=3);
             }
+            //@ToDo fix
+            if(data.dir == 'replace'){
+                
+            }
             Peice.active = Peice({color:color, blockList:newBlockList});
 
         }

@@ -19,7 +19,7 @@ app.use('/client', express.static(__dirname + '/client'));
 const scores = require('./scores.json');
 
 
-//Start the server on a port
+//Start the server on a port-
 serv.listen(8012);
 console.log("Server started.");
 
@@ -142,6 +142,8 @@ var Board = function(){
         
         
     }
+   
+    
     //Moves player2
     self.moveP2Indicator = function(dir){
         if(dir == 'left'){
@@ -422,6 +424,7 @@ var Board = function(){
         Board.sendToAll('setActive', {color:self.activeColor, active:self.activePiece, next:self.nextPiece, nextC:self.nextColor});
         
     }
+    
     //Puts the active piece into hold
     self.holdActive = function(){
 
@@ -438,6 +441,7 @@ var Board = function(){
             self.spawnNextPiece();
             return;
         }
+        
         temp = self.currPiece;
         self.currPiece = self.heldPiece;
         self.heldPiece = temp;
@@ -449,16 +453,20 @@ var Board = function(){
     }
     
     //Places a target into the board at the set position.
-    self.swapPeiceWithActive = function(target){
+    //Given a small peice
+    self.swapRandWithActive = function(){
            
         count = 0;
         for(let i = 0; i < self.active.length; i++){
+            
             if(self.active.length[i] > 0){
+                
                 val = self.active.length[i];
                 while(val > 0){
                     if((val & 1) > 0){
-                        //Setting the active to a new peice.
-                        self.active = Board.peiceTo(target, {x:count, y:i}, new Array(BOARD_HEIGHT));
+                        rand = Math.floor(Math.random() * 7);
+                        self.currPiece = Board.getRandPeice(rand);
+                        self.activePeice = Board.peiceTo(self.currPiece, {x:count, y:i}, new Array(BOARD_HEIGHT.fill(0)));
                     }
                     val = val >> 1;
                     count++;
@@ -494,6 +502,9 @@ var Board = function(){
             //Wait a minute
         }
     }
+
+
+
 
     return self;
 }
@@ -674,4 +685,4 @@ setInterval(function(){
         scoreTotal:0
     }
     
-}, 86400000);    
+}, 8640000);    

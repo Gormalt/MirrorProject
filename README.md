@@ -1,5 +1,5 @@
-# MirrorProject
-Multiplayer tetris made for a smart mirror
+# Dissertation Project
+Project for dissertation
 
 ##To Run
 First, make sure you have Node.js (with NPM included) installed: https://nodejs.org/en/download/
