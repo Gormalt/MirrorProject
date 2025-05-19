@@ -1,165 +1,8 @@
-
 <!DOCTYPE html>
 <html>
 <head>
 <meta name="viewport" content="width=device-width, user-scalable=no"/>
-<style>
-html, body{height:100%}
-
-p {
-    font-family: "Lucida Console", monospace;
-
-}
-
-p.openTitle {
-    margin-top:6%;
-    margin-bottom:0%;
-    margin-left:auto;
-    margin-right:auto;
-    width:80%;
-    text-align:center;
-    font-size:3em;
-}
-p.description{
-    margin-top: 9%;
-    margin-bottom:6%;
-    margin-left:auto;
-    margin-right:auto;
-    width:80%;
-    font-size:1.5em;
-    text-align:center;
-}
-p.scoreText{
-    margin-left:auto;
-    margin-right:auto;
-    font-size:1.5em;
-    text-align:center;
-    margin-top: 5%;
-    margin-bottom: 5%;
-
-}
-
-button.navButton{
-    background-color:#008CBA;
-    margin-top:9%;
-    font-size:2em;
-    border-radius:12px;
-    margin-left:auto;
-    margin-right:auto;    
-    color:white;
-    padding: 30px 64px;
-    border:none;
-    display:block;
-}
-
-button.playerSelect{
-    background-color:#555555;
-    border-radius:12px;
-    margin-left:auto;
-    margin-right:auto;    
-    color:white;
-    padding: 30px 64px;
-    border:none;
-    width:100%;
-    display:block;
-    font-size:100px;
-    text-align:left;
-}
-
-div.footer{
-    bottom: 0%;
-    height: 10%
-    margin-top:0%
-    width:100%;
-    margin-left:auto;
-    margin-right:auto; 
-
-}
-
-div.selectScreen{
-    margin-left:auto;
-    margin-right:auto; 
-
-}
-div.titleDiv{
-    margin-top: 8%;
-    margin-bottom: 3%;
-}
-
-.pregame{
-    width:100%;
-    margin-left:auto;
-    margin-right:auto;
-    display:block;
-}
-
-@media only screen and (min-width: 768px) {
-    .pregame{
-        width:800px;
-        margin-left:auto;
-        margin-right:auto;
-        display:block;
-    }
-}
-
-.gameButtons{
-    margin: 10px;
-    width: 150px;
-    height: 150px;
-    border: none;
-}
-
-.rotateButton{
-    width:150px;
-    height:150px;
-    border: none;
-    margin: 10px;
-}
-
-div.waitingPage{
-    margin-top: 9%;
-    margin-bottom:6%;
-    margin-left:auto;
-    margin-right:auto;
-    width:80%;
-    text-align:center;
-}
-
-p.waitingText{
-    margin-top: 40%;
-    font-size:2em;
-}
-p.s{
-    font-size:1.5em;
-}
-#pressLeft{
-    background-image:url('/client/img/ArrowLeft.png');
-    background-size: 150px 150px;
-}
-#pressRight{
-    background-image:url('/client/img/ArrowRight.png');
-    background-size: 150px 150px;
-}
-#pressDown{
-    background-image:url('/client/img/ArrowDown.png');
-    background-size: 150px 150px;
-}
-#rotateL{
-    background-image:url('/client/img/RotateLeft.png');
-    background-size: 150px 150px;
-}
-#rotateR{
-    background-image:url('/client/img/RotateRight.png');
-    background-size: 150px 150px;
-}
-#hold{
-    background-image:url('/client/img/Hold.png');
-    background-size: 300px 150px;
-
-}
-
-</style>
-
+<link rel="stylesheet" href="/client/css/main.css">
 </head>
 <div id = "pregame" class= "pregame">
     <div class="titleDiv" width ="100%">
@@ -169,7 +12,6 @@ p.s{
     </div>
 
     <div id = 'landing' class = "openScreen">
-
         <p class="description">Play tetris on the smart mirror! Press play to get started.</p>
         <div style="width:100%;margin-top:10%;">
             <button id= "next" class="navButton">Play</button>
@@ -178,7 +20,7 @@ p.s{
     </div>
 
     <div id = 'select' class="openScreen" style="display:none">
-        <p class="description">If you’re playing alone select PLAYER 1. <br> If you want to join PLAYER 1, select PLAYER 2</p>
+        <p class="description">If you're playing alone select PLAYER 1. <br> If you want to join PLAYER 1, select PLAYER 2</p>
     
         <div width = "100%" style = "margin-top:6%;">
             <button id = "player1" class ="playerSelect">Player 1</button>
@@ -229,7 +71,7 @@ p.s{
     <p class = "scoreText">Your score is:</p>
     <p id = "scoreNum" class = "scoreText"></p>
     <p class = "scoreText">Enter your initials below! (Only the first 3 letters will be used)</p>
-    <input id = "scoreName" type = "text" style = "font-size:3em;text-align:center;margin-left:auto;margin-right-auto;height:100px;width:200px;"></input>
+    <input id = "scoreName" type = "text" style = "font-size:3em;text-align:center;margin-left:auto;margin-right:auto;height:100px;width:200px;"></input>
     <button id = "scoreButton" class = "navButton" style="margin-top:3%;">Enter</button>
     <button id = "backButton" class = "navButton" style="margin-top:3%;">Back</button>
 </form> 
@@ -238,7 +80,7 @@ p.s{
 
 <div id="scoreDisplay" style="display:none">
      
-        <p class="description" style = "margin-top:5%margin-bottom:4%">Leaderboard</p>
+        <p class="description" style = "margin-top:5%;margin-bottom:4%">Leaderboard</p>
 
         <div style = "text-align:center; margin-top:0%;margin-bottom:4%;">
             <p class = 's'>1. <span id = 's1'></span></p>
@@ -254,163 +96,8 @@ p.s{
         
 </div>
 
-
-
-
 <script src="/socket.io/socket.io.js"></script>
-
-<script>
-    //Here are the buttons for the PreGame UI
-    var nextButton = document.getElementById('next');
-    var landingDiv = document.getElementById('landing');
-    var backButton = document.getElementById('backButton');
-    var backButton2 = document.getElementById('backButton2');
-    
-    var leaderboardButton = document.getElementById('gameLeaderboard');
-    
-    var selectDiv = document.getElementById('select');
-    var readyButton = document.getElementById('ready');
-    var backButton = document.getElementById('backButton');
-    
-    var controlDiv = document.getElementById('control');
-    var pregameDiv = document.getElementById('pregame');
-    var waitingDiv = document.getElementById('waiting');
-    
-    var scoreDiv = document.getElementById('score');
-    var scoreNum = document.getElementById('scoreNum');
-    var scoreName = document.getElementById('scoreName');
-    var scoreButton = document.getElementById('scoreButton');    
-    var leaderDiv = document.getElementById('scoreDisplay');
-    
-    var player1Button = document.getElementById('player1');
-    var player2Button = document.getElementById('player2');
-    
-    var scoreSpans = [];
-    scoreSpans[0] = document.getElementById('s1');
-    scoreSpans[1] = document.getElementById('s2');
-    scoreSpans[2] = document.getElementById('s3');
-    scoreSpans[3] = document.getElementById('s4');
-    scoreSpans[4] = document.getElementById('s5');
-    scoreSpans[5] = document.getElementById('s6');
-    scoreSpans[6] = document.getElementById('s7');
-    scoreSpans[7] = document.getElementById('s8');
-    
-    backButton2.onclick=function(){
-        console.log("BACK");
-        leaderDiv.style.display = 'none';
-        scoreDiv.style.display = 'none';
-        landingDiv.style.display = 'block';
-        pregameDiv.style.display = 'block';
-    }
-    
-    nextButton.onclick = function(){
-        landingDiv.style.display = 'none';
-        pregameDiv.style.display = 'none';
-        //selectDiv.style.display = 'block';
-        waitingDiv.style.display = 'block';
-        socket.emit('ready', {playerNum});
-    }
-/*
-    backButton.onclick = function(){
-        landingDiv.style.display = 'block';
-        selectDiv.style.display = 'none';
-    }
-*/    
-    var socket = io();
-    
-    var playerNum = 1;
-    
-    player1Button.onclick = function(){
-        playerNum = 1;
-        player1Button.style.backgroundColor = '#AAAAAA';
-        player2Button.style.backgroundColor = '#333333';
-    }
-    
-    player2Button.onclick = function(){
-        playerNum = 2;
-        player2Button.style.backgroundColor = '#AAAAAA';
-        player1Button.style.backgroundColor = '#333333';
-    }
-    
-    leaderboardButton.onclick = function(){
-        socket.emit('score', {name:"", score:"0"});
-        leaderDiv.style.display = 'block';
-        landingDiv.style.display = 'none';
-        pregameDiv.style.display = 'none';
-    
-    }
-    
-    backButton.onclick = function(){
-        leaderDiv.style.display = 'none';
-        scoreDiv.style.display = 'none';
-        landingDiv.style.display = 'block';
-        pregameDiv.style.display = 'block';
-        
-    }
-    
-    readyButton.onclick = function(){
-        waitingDiv.style.display = 'block';
-        pregameDiv.style.display = 'none';
-        socket.emit('ready', {playerNum});
-        
-    }  
-    
-    scoreButton.onclick = function(){
-
-        socket.emit('score', {name:scoreName.value, score:scoreNum.innerHTML});
-    }
-    
-    socket.on('returnScores', function(data){
-        console.log(data);
-        leaderDiv.style.display = 'block';
-        scoreDiv.style.display = 'none';
-        for(let x = 0; x < data.length; x++){
-            scoreSpans[x].innerHTML = (data[x].name + " - " + data[x].score)
-        
-        }
-    });
-    
-    socket.on('startTheGame', function(data){
-        waitingDiv.style.display = 'none';
-        controlDiv.style.display = 'block';
-    });
-    
-    socket.on('enterScore', function(data){
-        
-        scoreNum.innerHTML = (data.score);
-        controlDiv.style.display = 'none';
-        scoreDiv.style.display = 'block';
-    });
-    
-    //@TODO Leaderboard page
-    
-    //Get the buttons by their id's
-    var leftButton = document.getElementById('pressLeft');
-    var rightButton = document.getElementById('pressRight');
-    var downButton = document.getElementById('pressDown');
-    var rotateRButton = document.getElementById('rotateR');
-    var rotateLButton = document.getElementById('rotateL');
-    var holdButton = document.getElementById('hold');
-    //sets the function when the button is clicked
-    leftButton.onclick = function(){
-        socket.emit('inputPack', {target:"left"});
-    }
-    rightButton.onclick = function(){
-        socket.emit('inputPack', {target:"right"});
-    }  
-    downButton.onclick = function(){
-        socket.emit('inputPack', {target:"down"});
-    }
-    rotateRButton.onclick = function(){
-        socket.emit('inputPack', {target:"rotateL"});
-    }
-    rotateLButton.onclick = function(){
-        socket.emit('inputPack', {target:"rotateR"});
-    }
-    holdButton.onclick = function(){
-        socket.emit('hold', {target:'now'});
-    }
-
-</script>
+<script src="/client/js/config.js"></script>
+<script src="/client/js/clientController.js"></script>
 
 </html>

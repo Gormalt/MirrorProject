@@ -1,0 +1,158 @@
+html, body{height:100%}
+
+p {
+    font-family: "Lucida Console", monospace;
+}
+
+p.openTitle {
+    margin-top:6%;
+    margin-bottom:0%;
+    margin-left:auto;
+    margin-right:auto;
+    width:80%;
+    text-align:center;
+    font-size:3em;
+}
+
+p.description{
+    margin-top: 9%;
+    margin-bottom:6%;
+    margin-left:auto;
+    margin-right:auto;
+    width:80%;
+    font-size:1.5em;
+    text-align:center;
+}
+
+p.scoreText{
+    margin-left:auto;
+    margin-right:auto;
+    font-size:1.5em;
+    text-align:center;
+    margin-top: 5%;
+    margin-bottom: 5%;
+}
+
+button.navButton{
+    background-color:#008CBA;
+    margin-top:9%;
+    font-size:2em;
+    border-radius:12px;
+    margin-left:auto;
+    margin-right:auto;    
+    color:white;
+    padding: 30px 64px;
+    border:none;
+    display:block;
+}
+
+button.playerSelect{
+    background-color:#555555;
+    border-radius:12px;
+    margin-left:auto;
+    margin-right:auto;    
+    color:white;
+    padding: 30px 64px;
+    border:none;
+    width:100%;
+    display:block;
+    font-size:100px;
+    text-align:left;
+}
+
+div.footer{
+    bottom: 0%;
+    height: 10%;
+    margin-top:0%;
+    width:100%;
+    margin-left:auto;
+    margin-right:auto; 
+}
+
+div.selectScreen{
+    margin-left:auto;
+    margin-right:auto; 
+}
+
+div.titleDiv{
+    margin-top: 8%;
+    margin-bottom: 3%;
+}
+
+.pregame{
+    width:100%;
+    margin-left:auto;
+    margin-right:auto;
+    display:block;
+}
+
+@media only screen and (min-width: 768px) {
+    .pregame{
+        width:800px;
+        margin-left:auto;
+        margin-right:auto;
+        display:block;
+    }
+}
+
+.gameButtons{
+    margin: 10px;
+    width: 150px;
+    height: 150px;
+    border: none;
+}
+
+.rotateButton{
+    width:150px;
+    height:150px;
+    border: none;
+    margin: 10px;
+}
+
+div.waitingPage{
+    margin-top: 9%;
+    margin-bottom:6%;
+    margin-left:auto;
+    margin-right:auto;
+    width:80%;
+    text-align:center;
+}
+
+p.waitingText{
+    margin-top: 40%;
+    font-size:2em;
+}
+
+p.s{
+    font-size:1.5em;
+}
+
+#pressLeft{
+    background-image:url('/client/img/ArrowLeft.png');
+    background-size: 150px 150px;
+}
+
+#pressRight{
+    background-image:url('/client/img/ArrowRight.png');
+    background-size: 150px 150px;
+}
+
+#pressDown{
+    background-image:url('/client/img/ArrowDown.png');
+    background-size: 150px 150px;
+}
+
+#rotateL{
+    background-image:url('/client/img/RotateLeft.png');
+    background-size: 150px 150px;
+}
+
+#rotateR{
+    background-image:url('/client/img/RotateRight.png');
+    background-size: 150px 150px;
+}
+
+#hold{
+    background-image:url('/client/img/Hold.png');
+    background-size: 300px 150px;
+}

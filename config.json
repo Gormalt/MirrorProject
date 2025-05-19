@@ -1,0 +1,52 @@
+{
+  "server": {
+    "port": 8012,
+    "staticPath": "/client"
+  },
+  "game": {
+    "board": {
+      "height": 35,
+      "width": 12,
+      "maxValue": 4095,
+      "bitShift": 4096
+    },
+    "timing": {
+      "baseSpeed": 50,
+      "speedIncrement": 1,
+      "gameLoopInterval": 15,
+      "frameRate": 65
+    },
+    "scoring": {
+      "baseMultiplier": 1000,
+      "levelThreshold": 1000
+    },
+    "startingPiece": 4,
+    "startingSpeed": 1,
+    "spawnPosition": {
+        "x": 5,
+        "y": 20
+      },
+      "pieces": [
+      [3, 6],
+      [3, 3],
+      [7, 2],
+      [7, 1],
+      [15],
+      [6, 3],
+      [7, 4]
+      ],
+    
+    "gameOver": {
+      "timer": 100
+    }
+  },
+  "analytics": {
+    "dailyLogInterval": 86400000,
+    "logDirectory": "./logs"
+  },
+  "paths": {
+    "scores": "./scores.json",
+    "mainPage": "/client/index.html",
+    "mirrorPage": "/client/mirrorIndex.html"
+  }
+}
